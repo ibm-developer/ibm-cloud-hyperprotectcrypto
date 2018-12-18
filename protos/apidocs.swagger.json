@@ -1,0 +1,2026 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "server.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/crypto/Decrypt": {
+      "post": {
+        "summary": "CK_RV m_Decrypt (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR ciphered, CK_ULONG cipheredlen, \n    CK_BYTE_PTR plain, CK_ULONG_PTR plainlen, \n    target_t target) ;",
+        "operationId": "Decrypt",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DecryptFinal": {
+      "post": {
+        "summary": "CK_RV m_DecryptFinal (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR plain, CK_ULONG_PTR plainlen, \n    target_t target) ;",
+        "operationId": "DecryptFinal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptFinalResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptFinalRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DecryptInit": {
+      "post": {
+        "summary": "CK_RV m_DecryptInit (\n    unsigned char *state, size_t *statelen, \n    CK_MECHANISM_PTR mech, \n    const unsigned char *key, size_t keylen, \n    target_t target) ;",
+        "operationId": "DecryptInit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptInitResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptInitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DecryptSingle": {
+      "post": {
+        "summary": "CK_RV m_DecryptSingle (\n    const unsigned char *key, size_t keylen, \n    CK_MECHANISM_PTR mech, \n    CK_BYTE_PTR ciphered, CK_ULONG cipheredlen, \n    CK_BYTE_PTR plain, CK_ULONG_PTR plainlen, \n    target_t target) ;",
+        "operationId": "DecryptSingle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptSingleResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptSingleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DecryptUpdate": {
+      "post": {
+        "summary": "CK_RV m_DecryptUpdate (\n    unsigned char *state, size_t statelen, \n    CK_BYTE_PTR ciphered, CK_ULONG cipheredlen, \n    CK_BYTE_PTR plain, CK_ULONG_PTR plainlen, \n    target_t target) ;",
+        "operationId": "DecryptUpdate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptUpdateResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DecryptUpdateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DeriveKey": {
+      "post": {
+        "summary": "CK_RV m_DeriveKey (\n    CK_MECHANISM_PTR mech, \n    CK_ATTRIBUTE_PTR template, CK_ULONG templatelen, \n    const unsigned char *baseKey, size_t baseKeylen, \n    const unsigned char *data, size_t datalen, \n    const unsigned char *pin, size_t pinlen, \n    unsigned char *newKey, size_t *newKeylen, \n    unsigned char *checkSum, size_t *checkSumlen, \n    target_t target) ;",
+        "operationId": "DeriveKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DeriveKeyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DeriveKeyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/Digest": {
+      "post": {
+        "summary": "CK_RV m_Digest (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    CK_BYTE_PTR digest, CK_ULONG_PTR digestlen, \n    target_t target) ;",
+        "operationId": "Digest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DigestResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DigestRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DigestFinal": {
+      "post": {
+        "summary": "CK_RV m_DigestFinal (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR digest, CK_ULONG_PTR digestlen, \n    target_t target) ;",
+        "operationId": "DigestFinal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DigestFinalResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DigestFinalRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DigestInit": {
+      "post": {
+        "summary": "CK_RV m_DigestInit (\n    unsigned char *state, size_t *statelen, \n    const CK_MECHANISM_PTR mech, \n    target_t target) ;",
+        "operationId": "DigestInit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DigestInitResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DigestInitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DigestKey": {
+      "post": {
+        "summary": "CK_RV m_DigestKey (\n    unsigned char *state, size_t statelen, \n    const unsigned char *key, size_t keylen, \n    target_t target) ;",
+        "operationId": "DigestKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DigestKeyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DigestKeyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DigestSingle": {
+      "post": {
+        "summary": "CK_RV m_DigestSingle (\n    CK_MECHANISM_PTR mech, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    CK_BYTE_PTR digest, CK_ULONG_PTR digestlen, \n    target_t target) ;",
+        "operationId": "DigestSingle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DigestSingleResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DigestSingleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/DigestUpdate": {
+      "post": {
+        "summary": "CK_RV m_DigestUpdate (\n    unsigned char *state, size_t statelen, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    target_t target) ;",
+        "operationId": "DigestUpdate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11DigestUpdateResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11DigestUpdateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/Encrypt": {
+      "post": {
+        "summary": "CK_RV m_Encrypt (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR plain, CK_ULONG plainlen, \n    CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen, \n    target_t target) ;",
+        "operationId": "Encrypt",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/EncryptFinal": {
+      "post": {
+        "summary": "CK_RV m_EncryptFinal (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen, \n    target_t target) ;",
+        "operationId": "EncryptFinal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptFinalResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptFinalRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/EncryptInit": {
+      "post": {
+        "summary": "CK_RV m_EncryptInit (\n    unsigned char *state, size_t *statelen, \n    CK_MECHANISM_PTR mech, \n    const unsigned char *key, size_t keylen, \n    target_t target) ;",
+        "operationId": "EncryptInit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptInitResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptInitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/EncryptSingle": {
+      "post": {
+        "summary": "CK_RV m_EncryptSingle (\n    const unsigned char *key, size_t keylen, \n    CK_MECHANISM_PTR mech, \n    CK_BYTE_PTR plain, CK_ULONG plainlen, \n    CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen, \n    target_t target) ;",
+        "operationId": "EncryptSingle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptSingleResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptSingleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/EncryptUpdate": {
+      "post": {
+        "summary": "CK_RV m_EncryptUpdate (\n    unsigned char *state, size_t statelen, \n    CK_BYTE_PTR plain, CK_ULONG plainlen, \n    CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen, \n    target_t target) ;",
+        "operationId": "EncryptUpdate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptUpdateResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11EncryptUpdateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/GenerateKey": {
+      "post": {
+        "summary": "CK_RV m_GenerateKey (\n    CK_MECHANISM_PTR mech, \n    CK_ATTRIBUTE_PTR template, CK_ULONG templatelen, \n    const unsigned char *pin, size_t pinlen, \n    unsigned char *key, size_t *keylen, \n    unsigned char *checkSum, size_t *checkSumlen, \n    target_t target) ;",
+        "operationId": "GenerateKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11GenerateKeyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11GenerateKeyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/GenerateKeyPair": {
+      "post": {
+        "summary": "CK_RV m_GenerateKeyPair (\n    CK_MECHANISM_PTR mech, \n    CK_ATTRIBUTE_PTR pubKeyTemplate, CK_ULONG pubKeyTemplatelen, \n    CK_ATTRIBUTE_PTR privKeyTemplate, CK_ULONG privKeyTemplatelen, \n    const unsigned char *pin, size_t pinlen, \n    unsigned char *privKey, size_t *privKeylen, \n    unsigned char *pubKey, size_t *pubKeylen, \n    target_t target) ;",
+        "operationId": "GenerateKeyPair",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11GenerateKeyPairResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11GenerateKeyPairRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/GenerateRandom": {
+      "post": {
+        "summary": "See https://www-03.ibm.com/security/cryptocards/pciecc/pdf/ep11-structure.pdf for\nfurther documentation\nCK_RV m_GenerateRandom (\n    CK_BYTE_PTR rnd, CK_ULONG rndlen, \n    target_t target) ;",
+        "operationId": "GenerateRandom",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11GenerateRandomResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11GenerateRandomRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/GetAttributeValue": {
+      "post": {
+        "summary": "CK_RV m_GetAttributeValue (\n    const unsigned char *object, size_t objectlen, \n    CK_ATTRIBUTE_PTR attributes, CK_ULONG attributeslen, \n    target_t target) ;",
+        "operationId": "GetAttributeValue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11GetAttributeValueResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11GetAttributeValueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/GetMechanismInfo": {
+      "post": {
+        "summary": "CK_RV m_GetMechanismInfo (\n    CK_SLOT_ID slot, \n    CK_MECHANISM_TYPE mech, \n    CK_MECHANISM_INFO_PTR mechInfo, \n    target_t target) ;",
+        "operationId": "GetMechanismInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11GetMechanismInfoResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11GetMechanismInfoRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/GetMechanismList": {
+      "post": {
+        "summary": "CK_RV m_GetMechanismList (\n    CK_SLOT_ID slot, \n    CK_MECHANISM_TYPE_PTR mechs, CK_ULONG_PTR mechslen, \n    target_t target) ;",
+        "operationId": "GetMechanismList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11GetMechanismListResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11GetMechanismListRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/SetAttributeValue": {
+      "post": {
+        "summary": "CK_RV m_SetAttributeValue (\n    unsigned char *object, size_t objectlen, \n    CK_ATTRIBUTE_PTR attributes, CK_ULONG attributeslen, \n    target_t target) ;",
+        "operationId": "SetAttributeValue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11SetAttributeValueResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11SetAttributeValueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/Sign": {
+      "post": {
+        "summary": "CK_RV m_Sign (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen, \n    target_t target) ;",
+        "operationId": "Sign",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11SignResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11SignRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/SignFinal": {
+      "post": {
+        "summary": "CK_RV m_SignFinal (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen, \n    target_t target) ;",
+        "operationId": "SignFinal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11SignFinalResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11SignFinalRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/SignInit": {
+      "post": {
+        "summary": "CK_RV m_SignInit (\n    unsigned char *state, size_t *statelen, \n    CK_MECHANISM_PTR mech, \n    const unsigned char *privKey, size_t privKeylen, \n    target_t target) ;",
+        "operationId": "SignInit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11SignInitResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11SignInitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/SignSingle": {
+      "post": {
+        "summary": "CK_RV m_SignSingle (\n    const unsigned char *privKey, size_t privKeylen, \n    CK_MECHANISM_PTR mech, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen, \n    target_t target) ;",
+        "operationId": "SignSingle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11SignSingleResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11SignSingleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/SignUpdate": {
+      "post": {
+        "summary": "CK_RV m_SignUpdate (\n    unsigned char *state, size_t statelen, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    target_t target) ;",
+        "operationId": "SignUpdate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11SignUpdateResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11SignUpdateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/UnwrapKey": {
+      "post": {
+        "summary": "CK_RV m_UnwrapKey (\n    const CK_BYTE_PTR wrapped, CK_ULONG wrappedlen, \n    const unsigned char *keK, size_t keKlen, \n    const unsigned char *macKey, size_t macKeylen, \n    const unsigned char *pin, size_t pinlen, \n    const CK_MECHANISM_PTR mech, \n    const CK_ATTRIBUTE_PTR template, CK_ULONG templatelen, \n    unsigned char *unwrapped, size_t *unwrappedlen, \n    CK_BYTE_PTR checkSum, CK_ULONG *checkSumlen, \n    target_t target) ;",
+        "operationId": "UnwrapKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11UnwrapKeyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11UnwrapKeyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/Verify": {
+      "post": {
+        "summary": "CK_RV m_Verify (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    CK_BYTE_PTR signature, CK_ULONG signaturelen, \n    target_t target) ;",
+        "operationId": "Verify",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11VerifyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11VerifyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/VerifyFinal": {
+      "post": {
+        "summary": "CK_RV m_VerifyFinal (\n    const unsigned char *state, size_t statelen, \n    CK_BYTE_PTR signature, CK_ULONG signaturelen, \n    target_t target) ;",
+        "operationId": "VerifyFinal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11VerifyFinalResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11VerifyFinalRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/VerifyInit": {
+      "post": {
+        "summary": "CK_RV m_VerifyInit (\n    unsigned char *state, size_t *statelen, \n    CK_MECHANISM_PTR mech, \n    const unsigned char *pubKey, size_t pubKeylen, \n    target_t target) ;",
+        "operationId": "VerifyInit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11VerifyInitResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11VerifyInitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/VerifySingle": {
+      "post": {
+        "summary": "CK_RV m_VerifySingle (\n    const unsigned char *pubKey, size_t pubKeylen, \n    CK_MECHANISM_PTR mech, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    CK_BYTE_PTR signature, CK_ULONG signaturelen, \n    target_t target) ;",
+        "operationId": "VerifySingle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11VerifySingleResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11VerifySingleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/VerifyUpdate": {
+      "post": {
+        "summary": "CK_RV m_VerifyUpdate (\n    unsigned char *state, size_t statelen, \n    CK_BYTE_PTR data, CK_ULONG datalen, \n    target_t target) ;",
+        "operationId": "VerifyUpdate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11VerifyUpdateResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11VerifyUpdateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/crypto/WrapKey": {
+      "post": {
+        "summary": "CK_RV m_WrapKey (\n    const unsigned char *key, size_t keylen, \n    const unsigned char *keK, size_t keKlen, \n    const unsigned char *macKey, size_t macKeylen, \n    const CK_MECHANISM_PTR mech, \n    CK_BYTE_PTR wrapped, CK_ULONG_PTR wrappedlen, \n    target_t target) ;",
+        "operationId": "WrapKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11WrapKeyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grep11WrapKeyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Crypto"
+        ]
+      }
+    },
+    "/v1/keystore/gettoken": {
+      "get": {
+        "operationId": "GetToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grep11GetTokenResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserManagement"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "grep11AddAdminResponse": {
+      "type": "object"
+    },
+    "grep11AddUserResponse": {
+      "type": "object"
+    },
+    "grep11ChangeStoreResponse": {
+      "type": "object"
+    },
+    "grep11ChangeUserResponse": {
+      "type": "object"
+    },
+    "grep11CheckUserResponse": {
+      "type": "object"
+    },
+    "grep11CreateStoreResponse": {
+      "type": "object"
+    },
+    "grep11DecryptFinalRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptFinalResponse": {
+      "type": "object",
+      "properties": {
+        "Plain": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptInitRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Key": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptInitResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Ciphered": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptResponse": {
+      "type": "object",
+      "properties": {
+        "Plain": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptSingleRequest": {
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Ciphered": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptSingleResponse": {
+      "type": "object",
+      "properties": {
+        "Plain": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Ciphered": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DecryptUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Plain": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DeleteObjectResponse": {
+      "type": "object"
+    },
+    "grep11DeleteStoreResponse": {
+      "type": "object"
+    },
+    "grep11DeleteUserResponse": {
+      "type": "object"
+    },
+    "grep11DeriveKeyRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Template": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "BaseKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        },
+        "NewKeyId": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11DeriveKeyResponse": {
+      "type": "object",
+      "properties": {
+        "NewKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "CheckSum": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestFinalRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestFinalResponse": {
+      "type": "object",
+      "properties": {
+        "Digest": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestInitRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        }
+      }
+    },
+    "grep11DigestInitResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestKeyRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Key": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestKeyResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestResponse": {
+      "type": "object",
+      "properties": {
+        "Digest": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestSingleRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestSingleResponse": {
+      "type": "object",
+      "properties": {
+        "Digest": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11DigestUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptFinalRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptFinalResponse": {
+      "type": "object",
+      "properties": {
+        "Ciphered": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptInitRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Key": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptInitResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Plain": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptResponse": {
+      "type": "object",
+      "properties": {
+        "Ciphered": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptSingleRequest": {
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Plain": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptSingleResponse": {
+      "type": "object",
+      "properties": {
+        "Ciphered": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Plain": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11EncryptUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Ciphered": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11GenerateKeyPairRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "PubKeyTemplate": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "PrivKeyTemplate": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "PrivKeyId": {
+          "type": "string"
+        },
+        "PubKeyId": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11GenerateKeyPairResponse": {
+      "type": "object",
+      "properties": {
+        "PrivKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "PubKey": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11GenerateKeyRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Template": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "KeyId": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11GenerateKeyResponse": {
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "format": "byte"
+        },
+        "CheckSum": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11GenerateRandomRequest": {
+      "type": "object",
+      "properties": {
+        "Len": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "grep11GenerateRandomResponse": {
+      "type": "object",
+      "properties": {
+        "Rnd": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11GenerateStatus": {
+      "type": "object",
+      "properties": {
+        "privKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "pubKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11GetAttributeValueRequest": {
+      "type": "object",
+      "properties": {
+        "Object": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      }
+    },
+    "grep11GetAttributeValueResponse": {
+      "type": "object",
+      "properties": {
+        "Attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      }
+    },
+    "grep11GetCardAuditLogResponse": {
+      "type": "object"
+    },
+    "grep11GetMechanismInfoRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "grep11GetMechanismInfoResponse": {
+      "type": "object",
+      "properties": {
+        "MechInfo": {
+          "$ref": "#/definitions/grep11MechanismInfo"
+        }
+      }
+    },
+    "grep11GetMechanismListRequest": {
+      "type": "object"
+    },
+    "grep11GetMechanismListResponse": {
+      "type": "object",
+      "properties": {
+        "Mechs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "grep11GetObjectsResponse": {
+      "type": "object",
+      "properties": {
+        "Handle": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      }
+    },
+    "grep11GetServerListResponse": {
+      "type": "object",
+      "properties": {
+        "Address": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "grep11GetStoreResponse": {
+      "type": "object"
+    },
+    "grep11GetTokenResponse": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11LoadStatus": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "session": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11Mechanism": {
+      "type": "object",
+      "properties": {
+        "Mechanism": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "Parameter": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11MechanismInfo": {
+      "type": "object",
+      "properties": {
+        "MinKeySize": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "MaxKeySize": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "Flags": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "grep11ReturnTokenResponse": {
+      "type": "object"
+    },
+    "grep11RewrapKeysResponse": {
+      "type": "object"
+    },
+    "grep11SetAttributeValueRequest": {
+      "type": "object",
+      "properties": {
+        "Object": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      }
+    },
+    "grep11SetAttributeValueResponse": {
+      "type": "object",
+      "properties": {
+        "Object": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SetLoggingLevelResponse": {
+      "type": "object"
+    },
+    "grep11SignFinalRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignFinalResponse": {
+      "type": "object",
+      "properties": {
+        "Signature": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignInitRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "PrivKey": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignInitResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignResponse": {
+      "type": "object",
+      "properties": {
+        "Signature": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignSingleRequest": {
+      "type": "object",
+      "properties": {
+        "PrivKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignSingleResponse": {
+      "type": "object",
+      "properties": {
+        "Signature": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignStatus": {
+      "type": "object",
+      "properties": {
+        "sig": {
+          "type": "string",
+          "format": "byte"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11SignUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11SignUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11StoreObjectResponse": {
+      "type": "object"
+    },
+    "grep11UnwrapKeyRequest": {
+      "type": "object",
+      "properties": {
+        "Wrapped": {
+          "type": "string",
+          "format": "byte"
+        },
+        "KeK": {
+          "type": "string",
+          "format": "byte"
+        },
+        "MacKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Template": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "UnwrappedId": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11UnwrapKeyResponse": {
+      "type": "object",
+      "properties": {
+        "Unwrapped": {
+          "type": "string",
+          "format": "byte"
+        },
+        "CheckSum": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11VerifyFinalRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Signature": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11VerifyFinalResponse": {
+      "type": "object"
+    },
+    "grep11VerifyInitRequest": {
+      "type": "object",
+      "properties": {
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "PubKey": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11VerifyInitResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11VerifyRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Signature": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11VerifyResponse": {
+      "type": "object"
+    },
+    "grep11VerifySingleRequest": {
+      "type": "object",
+      "properties": {
+        "PubKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Signature": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11VerifySingleResponse": {
+      "type": "object"
+    },
+    "grep11VerifyStatus": {
+      "type": "object",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "grep11VerifyUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11VerifyUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grep11WrapKeyRequest": {
+      "type": "object",
+      "properties": {
+        "Key": {
+          "type": "string",
+          "format": "byte"
+        },
+        "KeK": {
+          "type": "string",
+          "format": "byte"
+        },
+        "MacKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Mech": {
+          "$ref": "#/definitions/grep11Mechanism"
+        }
+      }
+    },
+    "grep11WrapKeyResponse": {
+      "type": "object",
+      "properties": {
+        "Wrapped": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    }
+  }
+}
