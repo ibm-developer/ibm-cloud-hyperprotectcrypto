@@ -1,0 +1,10 @@
+digraph G {
+  Connect -> XXXSingle
+  Connect -> XXXInit
+  XXXSingle -> Disconnect
+  XXXInit -> XXX
+  XXXInit -> XXXUpdate [label="0 - N times"]
+  XXX -> Disconnect
+  XXXUpdate -> XXXFinal
+  XXXFinal -> Disconnect
+}
