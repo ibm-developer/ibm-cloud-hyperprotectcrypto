@@ -8,23 +8,25 @@
 
     ```Bash
 	=== RUN   Example_getMechnismInfo
-	--- PASS: Example_getMechnismInfo (0.14s)
+	--- PASS: Example_getMechnismInfo (0.02s)
 	=== RUN   Example_encryptAndecrypt
-	--- PASS: Example_encryptAndecrypt (0.05s)
+	--- PASS: Example_encryptAndecrypt (0.03s)
 	=== RUN   Example_digest
 	--- PASS: Example_digest (0.02s)
 	=== RUN   Example_signAndVerifyUsingRSAKeyPair
-	--- PASS: Example_signAndVerifyUsingRSAKeyPair (0.49s)
+	--- PASS: Example_signAndVerifyUsingRSAKeyPair (0.66s)
 	=== RUN   Example_signAndVerifyUsingECDSAKeyPair
 	--- PASS: Example_signAndVerifyUsingECDSAKeyPair (0.04s)
+	=== RUN   Example_signAndVerifyToTestErrorHandling
+	--- PASS: Example_signAndVerifyToTestErrorHandling (0.04s)
 	=== RUN   Example_wrapAndUnwrapKey
-	--- PASS: Example_wrapAndUnwrapKey (0.63s)
+	--- PASS: Example_wrapAndUnwrapKey (0.65s)
 	=== RUN   Example_deriveKey
-	--- PASS: Example_deriveKey (0.12s)
+	--- PASS: Example_deriveKey (0.11s)
 	=== RUN   Example_tls
 	--- PASS: Example_tls (0.05s)
 	PASS
-	ok  	github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/examples	1.588s
+	ok  	github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/examples	1.667s
     ```
 
 ## General function call workflow

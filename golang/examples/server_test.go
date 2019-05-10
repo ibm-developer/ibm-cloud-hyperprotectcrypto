@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	address = "your-ep11server-address.com"
+	address = "your-ep11server-address.com:12345"
 )
 
 // Example_getMechnismInfo gets mechnism list and retrieve detail information for CKM_RSA_PKCS
@@ -147,7 +147,7 @@ func Example_encryptAndecrypt() {
 	}
 	decipherStateUpdate, err := cryptoClient.DecryptUpdate(context.Background(), decipherDataUpdate)
 	if err != nil {
-		panic(fmt.Errorf("Failed Encrypt [%s]", err))
+		panic(fmt.Errorf("Failed DecryptUpdate [%s]", err))
 	}
 
 	plaintext := decipherStateUpdate.Plain[:]
@@ -157,7 +157,7 @@ func Example_encryptAndecrypt() {
 	}
 	decipherStateUpdate, err = cryptoClient.DecryptUpdate(context.Background(), decipherDataUpdate)
 	if err != nil {
-		panic(fmt.Errorf("Failed Encrypt [%s]", err))
+		panic(fmt.Errorf("Failed DecryptUpdate [%s]", err))
 	}
 	plaintext = append(plaintext, decipherStateUpdate.Plain...)
 
@@ -166,7 +166,7 @@ func Example_encryptAndecrypt() {
 	}
 	decipherStateFinal, err := cryptoClient.DecryptFinal(context.Background(), decipherDataFinal)
 	if err != nil {
-		panic(fmt.Errorf("Failed EncryptFinal [%s]", err))
+		panic(fmt.Errorf("Failed DecryptFinal [%s]", err))
 	}
 	plaintext = append(plaintext, decipherStateFinal.Plain...)
 
@@ -194,7 +194,7 @@ func Example_digest() {
 
 	cryptoClient := pb.NewCryptoClient(conn)
 
-	digestData := []byte("This is the data longer than 64 bytes so that multiple digest operations are needed")
+	digestData := []byte("This is the data longer than 64 bytes This is the data longer than 64 bytes")
 	digestInitRequest := &pb.DigestInitRequest{
 		Mech: &pb.Mechanism{Mechanism: ep11.CKM_SHA256},
 	}
@@ -244,8 +244,8 @@ func Example_digest() {
 	}
 
 	// Output:
-	// Digest data using single digest operation: 9e7e6c3287925f61a8b4759d8faf6fca387917a5e6615b0b7b38750d3fc8ac20
-	// Digest data using multiple operations: 9e7e6c3287925f61a8b4759d8faf6fca387917a5e6615b0b7b38750d3fc8ac20
+	// Digest data using single digest operation: ad4e0b6e309d192862ec6db692d17072ddd3a98ccd37afe642a04f7ca554c94c
+	// Digest data using multiple operations: ad4e0b6e309d192862ec6db692d17072ddd3a98ccd37afe642a04f7ca554c94c
 }
 
 // Example_signAndVerifyUsingRSAKeyPair sign on a piece of data and verify it
@@ -321,8 +321,12 @@ func Example_signAndVerifyUsingRSAKeyPair() {
 		Signature: SignResponse.Signature,
 	}
 	_, err = cryptoClient.Verify(context.Background(), verifyRequest)
-	if err != nil {
-		panic(fmt.Errorf("Verify Error: %s", err))
+	if ok, ep11Status := util.Convert(err); !ok {
+		if ep11Status.Code == ep11.CKR_SIGNATURE_INVALID {
+			panic(fmt.Errorf("Invalid Signature\n"))
+		} else {
+			panic(fmt.Errorf("Verify Error[%d]: %s", ep11Status.Code, ep11Status.Detail))
+		}
 	}
 	fmt.Println("Verified")
 
@@ -402,8 +406,12 @@ func Example_signAndVerifyUsingECDSAKeyPair() {
 		Signature: SignResponse.Signature,
 	}
 	_, err = cryptoClient.Verify(context.Background(), verifyRequest)
-	if err != nil {
-		panic(fmt.Errorf("Verify Error: %s", err))
+	if ok, ep11Status := util.Convert(err); !ok {
+		if ep11Status.Code == ep11.CKR_SIGNATURE_INVALID {
+			panic(fmt.Errorf("Invalid Signature\n"))
+		} else {
+			panic(fmt.Errorf("Verify Error[%d]: %s", ep11Status.Code, ep11Status.Detail))
+		}
 	}
 	fmt.Println("Verified")
 
@@ -411,6 +419,95 @@ func Example_signAndVerifyUsingECDSAKeyPair() {
 	// Generated ECDSA PKCS key pairs
 	// Data signed
 	// Verified
+}
+
+// Example_signAndVerifyToTestErrorHandling sign on a piece of data, modify signature and verify it expecting error code returned
+func Example_signAndVerifyToTestErrorHandling() {
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		panic(fmt.Errorf("did not connect: %v", err))
+	}
+	defer conn.Close()
+
+	cryptoClient := pb.NewCryptoClient(conn)
+
+	ecParameters, err := asn1.Marshal(util.OIDNamedCurveP256)
+	if err != nil {
+		panic(fmt.Errorf("Unable To Encode Parameter OID: %s", err))
+	}
+
+	publicKeyECTemplate := util.NewAttributeMap(
+		util.NewAttribute(ep11.CKA_EC_PARAMS, ecParameters),
+		util.NewAttribute(ep11.CKA_VERIFY, true),
+		util.NewAttribute(ep11.CKA_EXTRACTABLE, false),
+	)
+	privateKeyECTemplate := util.NewAttributeMap(
+		util.NewAttribute(ep11.CKA_SIGN, true),
+		util.NewAttribute(ep11.CKA_EXTRACTABLE, false),
+	)
+	generateECKeypairRequest := &pb.GenerateKeyPairRequest{
+		Mech:            &pb.Mechanism{Mechanism: ep11.CKM_EC_KEY_PAIR_GEN},
+		PubKeyTemplate:  publicKeyECTemplate,
+		PrivKeyTemplate: privateKeyECTemplate,
+	}
+	generateKeyPairStatus, err := cryptoClient.GenerateKeyPair(context.Background(), generateECKeypairRequest)
+	if err != nil {
+		panic(fmt.Errorf("GenerateKeyPair Error: %s", err))
+	}
+
+	fmt.Println("Generated ECDSA PKCS key pairs")
+
+	//Sign data
+	signInitRequest := &pb.SignInitRequest{
+		Mech:    &pb.Mechanism{Mechanism: ep11.CKM_ECDSA},
+		PrivKey: generateKeyPairStatus.PrivKey,
+	}
+	signInitResponse, err := cryptoClient.SignInit(context.Background(), signInitRequest)
+	if err != nil {
+		panic(fmt.Errorf("SignInit Error: %s", err))
+	}
+	signData := []byte("These data need to be signed")
+	signRequest := &pb.SignRequest{
+		State: signInitResponse.State,
+		Data:  signData,
+	}
+	SignResponse, err := cryptoClient.Sign(context.Background(), signRequest)
+	if err != nil {
+		panic(fmt.Errorf("Sign Error: %s", err))
+	}
+	fmt.Println("Data signed")
+
+	//modify signature to get error code
+	SignResponse.Signature[0] = 255
+
+	verifyInitRequest := &pb.VerifyInitRequest{
+		Mech:   &pb.Mechanism{Mechanism: ep11.CKM_ECDSA},
+		PubKey: generateKeyPairStatus.PubKey,
+	}
+	verifyInitResponse, err := cryptoClient.VerifyInit(context.Background(), verifyInitRequest)
+	if err != nil {
+		panic(fmt.Errorf("VerifyInit Error: %s", err))
+	}
+	verifyRequest := &pb.VerifyRequest{
+		State:     verifyInitResponse.State,
+		Data:      signData,
+		Signature: SignResponse.Signature,
+	}
+	_, err = cryptoClient.Verify(context.Background(), verifyRequest)
+
+	if ok, ep11Status := util.Convert(err); !ok {
+		if ep11Status.Code == ep11.CKR_SIGNATURE_INVALID {
+			fmt.Printf("Invalid Signature\n")
+			return
+		} else {
+			panic(fmt.Errorf("Verify Error[%d]: %s", ep11Status.Code, ep11Status.Detail))
+		}
+	}
+
+	// Output:
+	// Generated ECDSA PKCS key pairs
+	// Data signed
+	// Invalid Signature
 }
 
 //Example_wrapAndUnWrapKey wraps a AES key with RSA public key and unwrap it with private key
