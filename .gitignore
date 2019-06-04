@@ -1,1 +1,6 @@
-golang/examples/examples
+# IDEA IDE
+.idea
+.DS_Store
+
+# Visual Studio IDE
+.vscode
