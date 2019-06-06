@@ -18,13 +18,14 @@ import (
 	pb "github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/grpc"
 	"github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/util"
 	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
-//generateECDSAKeyPair generate 256 bits ECDSA key pair
+// generateECDSAKeyPair generates a 256 bit ECDSA key pair
 func generateECDSAKeyPair(cryptoClient pb.CryptoClient) ([]byte, []byte, error) {
 	ecParameters, err := asn1.Marshal(util.OIDNamedCurveP256)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Unable To Encode Parameter OID: %s", err)
+		return nil, nil, fmt.Errorf("Unable to encode parameter OID: %s", err)
 	}
 	publicKeyECTemplate := util.NewAttributeMap(
 		util.NewAttribute(ep11.CKA_EC_PARAMS, ecParameters),
@@ -43,7 +44,7 @@ func generateECDSAKeyPair(cryptoClient pb.CryptoClient) ([]byte, []byte, error) 
 	var ecKeypairResponse *pb.GenerateKeyPairResponse
 	ecKeypairResponse, err = cryptoClient.GenerateKeyPair(context.Background(), generateECKeypairRequest)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Generate ECDSA Key Pair Error: %s", err)
+		return nil, nil, fmt.Errorf("Generate ECDSA key pair error: %s", err)
 	}
 	return ecKeypairResponse.PrivKey, ecKeypairResponse.PubKey, nil
 }
@@ -65,7 +66,7 @@ func createECDSASelfSignedCert(privKey *util.EP11PrivateKey, commonName string, 
 	return certDERBytes, nil
 }
 
-//StartServer starts https server
+// StartServer starts https server
 func CreateServer(listenAddr string) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
@@ -101,7 +102,7 @@ func newHTTPTestClient(caCertDER []byte) *http.Client {
 }
 
 func ping(client *http.Client, serverAddr string) (string, error) {
-	//serverAddr in format of a.b.c.d:port in ipv4 or [::]:port in ipv6
+	// serverAddr in format of a.b.c.d:port in ipv4 or [::]:port in ipv6
 	var serverPort string
 	id := strings.LastIndex(serverAddr, ":")
 	if id != -1 {
@@ -123,11 +124,14 @@ func ping(client *http.Client, serverAddr string) (string, error) {
 	return string(data), nil
 }
 
-//Example_tls tests TLS communication between client and server, where certificate and private key are generated on the fly
+// Example_tls tests TLS communication between a client and server using a certificate and private key that are dynamically generated
 func Example_tls() {
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	tlsConfig := &tls.Config{}
+	creds := credentials.NewTLS(tlsConfig)
+
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
 	if err != nil {
-		fmt.Printf("Cannot connect: %s", err)
+		fmt.Printf("Could not connect to server: %s", err)
 		return
 	}
 	defer conn.Close()
@@ -138,15 +142,15 @@ func Example_tls() {
 		return
 	}
 
-	//create signer and raw certificate to build up TLS certificate
+	// Create signer and raw certificate to build up TLS certificate
 	priv, err := util.NewEP11Signer(cryptoClient, privKeyBlob, spki)
 	if err != nil {
-		fmt.Printf("NewEP11Signer err: %s\n", err)
+		fmt.Printf("NewEP11Signer error: %s\n", err)
 		return
 	}
 	certDER, err := createECDSASelfSignedCert(priv, "localhost", x509.ECDSAWithSHA256)
 	if err != nil {
-		fmt.Printf("createECDSASelfSignedCert err: %s\n", err)
+		fmt.Printf("createECDSASelfSignedCert error: %s\n", err)
 		return
 	}
 	tlsCert := tls.Certificate{
@@ -154,7 +158,7 @@ func Example_tls() {
 		PrivateKey:  priv,
 	}
 
-	//create & start server thread
+	// Create and start server thread
 	tlsCfg := &tls.Config{
 		Certificates: []tls.Certificate{tlsCert},
 		ClientAuth:   tls.NoClientCert,
@@ -171,7 +175,7 @@ func Example_tls() {
 		httpServer.Serve(lis)
 	}()
 
-	//create TLS client
+	// Create TLS client
 	client := newHTTPTestClient(certDER)
 	strResp, err := ping(client, lis.Addr().String())
 	if err != nil {
