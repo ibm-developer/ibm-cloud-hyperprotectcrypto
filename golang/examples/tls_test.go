@@ -18,7 +18,6 @@ import (
 	pb "github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/grpc"
 	"github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/util"
 	grpc "google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 // generateECDSAKeyPair generates a 256 bit ECDSA key pair
@@ -126,10 +125,7 @@ func ping(client *http.Client, serverAddr string) (string, error) {
 
 // Example_tls tests TLS communication between a client and server using a certificate and private key that are dynamically generated
 func Example_tls() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		fmt.Printf("Could not connect to server: %s", err)
 		return

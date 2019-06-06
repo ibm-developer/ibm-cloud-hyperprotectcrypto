@@ -1,12 +1,14 @@
 # Overview
 
 1. [Install Golang](https://golang.org/doc/install) and ensure that your cloned repository is in your GOPATH.
-2. Update the following information in the *examples/server_test.go* file. This information can obtained by logging in to your IBM Cloud account and viewing your Hyper Protect Crypto Serverices (HPCS) instance and IAM information. See the [HPCS documentation](https://cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-get-started) for more information about the IBM Cloud HPCS offering.
+2. Update the following information in the *examples/server_test.go* file.  
 
-	- [GREP11 server address](examples/server_test.go#L20) 
-	- [IBM Cloud API key](examples/server_test.go#L23)
-	- [IBM Cloud IAM endpoint](examples/server_test.go#L24)
-	- [HPCS Crypto Instance ID](examples/server_test.go#L25)
+	*NOTE: This information can obtained by logging in to your IBM Cloud account and viewing your Hyper Protect Crypto Serverices (HPCS) instance and IAM information. See the [HPCS documentation](https://cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-get-started) for more information about the IBM Cloud HPCS offering.*
+
+	- [GREP11 server address](examples/server_test.go#L20)
+	- [IBM Cloud API key](examples/server_test.go#L25)
+	- [IBM Cloud IAM endpoint](examples/server_test.go#L26)
+	- [HPCS Crypto Instance ID](examples/server_test.go#L27)
 
 		
 3. `cd $GOPATH/src/github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/examples`
@@ -56,4 +58,4 @@ For example, the *Encrypt* operation consists of *EncryptInit()*, *Encrypt()*, *
 
 The following diagram shows the three calling sequence flows that can be used for *Encrypt*, *Decrypt*, *Digest*, *Sign* and *Verify* operations:
 
-![function work flow](func_workflow.png)
+![function work flow](func_workflow.svg)
