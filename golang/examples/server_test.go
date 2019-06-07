@@ -3,6 +3,7 @@ package examples
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"crypto/tls"
 	"encoding/asn1"
 	"fmt"
@@ -17,20 +18,21 @@ import (
 )
 
 // The following IBM Cloud items need to be changed prior to running the sample program
-const address = "<grep11_server_address>"
+const address = "<grep11_server_address>:<port>"
 
-var iamCreds = &util.IAMPerRPCCredentials{
-	APIKey:   "<ibm_cloud_apikey>",
-	Endpoint: "<iam_ibm_cloud_endpoint>",
-	Instance: "<hpcs_instance_id>",
+var callOpts = []grpc.DialOption{
+	grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
+	grpc.WithPerRPCCredentials(&util.IAMPerRPCCredentials{
+		APIKey:   "<ibm_cloud_apikey>",
+		Endpoint: "<https://<iam_ibm_cloud_endpoint>",
+		Instance: "<hpcs_instance_id>",
+	}),
 }
 
 // Example_getMechanismInfo retrieves a mechanism list and retrieves detailed information for the CKM_RSA_PKCS mechanism
+// Flow: connect, get mechanism list, get mechanism info
 func Example_getMechanismInfo() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		panic(fmt.Errorf("Could not connect to server: %s", err))
 	}
@@ -59,11 +61,9 @@ func Example_getMechanismInfo() {
 }
 
 // Example_encryptAndDecrypt encrypts and decrypts plain text
+// Flow: connect, generate AES key, generate IV, encrypt multi-part data, decrypt multi-part data
 func Example_encryptAndDecrypt() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		panic(fmt.Errorf("Could not connect to server: %s", err))
 	}
@@ -198,11 +198,9 @@ func Example_encryptAndDecrypt() {
 }
 
 // Example_digest calculates the digest of some plain text
+// Flow: connect, digest single-part data, digest multi-part data
 func Example_digest() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		panic(fmt.Errorf("Could not connect to server: %s", err))
 	}
@@ -266,11 +264,9 @@ func Example_digest() {
 }
 
 // Example_signAndVerifyUsingRSAKeyPair signs some data and verifies it
+// Flow: connect, generate RSA key pair, sign single-part data, verify single-part data
 func Example_signAndVerifyUsingRSAKeyPair() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		panic(fmt.Errorf("did not connect: %v", err))
 	}
@@ -305,7 +301,7 @@ func Example_signAndVerifyUsingRSAKeyPair() {
 	if err != nil {
 		panic(fmt.Errorf("GenerateKeyPair error: %s", err))
 	}
-	fmt.Println("Generated RSA PKCS key pairs")
+	fmt.Println("Generated RSA PKCS key pair")
 
 	// Sign data
 	signInitRequest := &pb.SignInitRequest{
@@ -316,7 +312,8 @@ func Example_signAndVerifyUsingRSAKeyPair() {
 	if err != nil {
 		panic(fmt.Errorf("SignInit error: %s", err))
 	}
-	signData := []byte("This data needs to be signed")
+
+	signData := sha256.New().Sum([]byte("This data needs to be signed"))
 	signRequest := &pb.SignRequest{
 		State: signInitResponse.State,
 		Data:  signData,
@@ -351,17 +348,15 @@ func Example_signAndVerifyUsingRSAKeyPair() {
 	fmt.Println("Verified")
 
 	// Output:
-	// Generated RSA PKCS key pairs
+	// Generated RSA PKCS key pair
 	// Data signed
 	// Verified
 }
 
 // Example_signAndVerifyUsingECDSAKeyPair generates an ECDSA key pair and uses the key pair to sign and verify data
+// Flow: connect, generate ECDSA key pair, sign single-part data, verify single-part data
 func Example_signAndVerifyUsingECDSAKeyPair() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		panic(fmt.Errorf("Could not connect to server: %s", err))
 	}
@@ -393,7 +388,7 @@ func Example_signAndVerifyUsingECDSAKeyPair() {
 		panic(fmt.Errorf("GenerateKeyPair error: %s", err))
 	}
 
-	fmt.Println("Generated ECDSA PKCS key pairs")
+	fmt.Println("Generated ECDSA PKCS key pair")
 
 	// Sign data
 	signInitRequest := &pb.SignInitRequest{
@@ -404,7 +399,7 @@ func Example_signAndVerifyUsingECDSAKeyPair() {
 	if err != nil {
 		panic(fmt.Errorf("SignInit error: %s", err))
 	}
-	signData := []byte("This data needs to be signed")
+	signData := sha256.New().Sum([]byte("This data needs to be signed"))
 	signRequest := &pb.SignRequest{
 		State: signInitResponse.State,
 		Data:  signData,
@@ -439,17 +434,16 @@ func Example_signAndVerifyUsingECDSAKeyPair() {
 	fmt.Println("Verified")
 
 	// Output:
-	// Generated ECDSA PKCS key pairs
+	// Generated ECDSA PKCS key pair
 	// Data signed
 	// Verified
 }
 
 // Example_signAndVerifyToTestErrorHandling signs some data, modifies the signature and verifies the expected returned error code
+// Flow: connect, generate ECDSA key pair, sign single-part data, modify signature to force verify error,
+//                verify single-part data, ensure proper error is returned
 func Example_signAndVerifyToTestErrorHandling() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		panic(fmt.Errorf("Could not connect to server: %s", err))
 	}
@@ -481,7 +475,7 @@ func Example_signAndVerifyToTestErrorHandling() {
 		panic(fmt.Errorf("GenerateKeyPair error: %s", err))
 	}
 
-	fmt.Println("Generated ECDSA PKCS key pairs")
+	fmt.Println("Generated ECDSA PKCS key pair")
 
 	// Sign data
 	signInitRequest := &pb.SignInitRequest{
@@ -492,7 +486,7 @@ func Example_signAndVerifyToTestErrorHandling() {
 	if err != nil {
 		panic(fmt.Errorf("SignInit error: %s", err))
 	}
-	signData := []byte("This data needs to be signed")
+	signData := sha256.New().Sum([]byte("This data needs to be signed"))
 	signRequest := &pb.SignRequest{
 		State: signInitResponse.State,
 		Data:  signData,
@@ -530,17 +524,15 @@ func Example_signAndVerifyToTestErrorHandling() {
 	}
 
 	// Output:
-	// Generated ECDSA PKCS key pairs
+	// Generated ECDSA PKCS key pair
 	// Data signed
 	// Invalid signature
 }
 
 // Example_wrapAndUnWrapKey wraps an AES key with a RSA public key and then unwraps it with the private key
+// Flow: connect, generate AES key, generate RSA key pair, wrap/unwrap AES key with RSA key pair
 func Example_wrapAndUnwrapKey() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		panic(fmt.Errorf("Could not connect to server: %s", err))
 	}
@@ -594,7 +586,7 @@ func Example_wrapAndUnwrapKey() {
 	if err != nil {
 		panic(fmt.Errorf("GenerateKeyPair error: %s", err))
 	}
-	fmt.Println("Generated PKCS key pairs")
+	fmt.Println("Generated PKCS key pair")
 
 	wrapKeyRequest := &pb.WrapKeyRequest{
 		Mech: &pb.Mechanism{Mechanism: ep11.CKM_RSA_PKCS},
@@ -633,18 +625,16 @@ func Example_wrapAndUnwrapKey() {
 
 	// Output:
 	// Generated AES key
-	// Generated PKCS key pairs
+	// Generated PKCS key pair
 	// Wraped AES key
 	// Unwraped AES key
 }
 
-// Example_deriveKey generates ECDH key pairs for Bob and Alice and then generates AES keys for both of them.
+// Example_deriveKey generates ECDHE key pairs for Bob and Alice and then generates AES keys for both of them.
 // The names Alice and Bob are described in https://en.wikipedia.org/wiki/Diffie–Hellman_key_exchange.
+// Flow: connect, generate key pairs, derive AES key for Bob, derive AES key for Alice, encrypt with Alice's AES key and decrypt with Bob's AES key
 func Example_deriveKey() {
-	tlsConfig := &tls.Config{}
-	creds := credentials.NewTLS(tlsConfig)
-
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithPerRPCCredentials(iamCreds))
+	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
 		panic(fmt.Errorf("Could not connect to server: %s", err))
 	}
@@ -674,13 +664,13 @@ func Example_deriveKey() {
 	if err != nil {
 		panic(fmt.Errorf("Generate Alice EC key pair error: %s", err))
 	}
-	fmt.Println("Generated Alice EC key pairs")
+	fmt.Println("Generated Alice EC key pair")
 
 	bobECKeypairResponse, err := cryptoClient.GenerateKeyPair(context.Background(), generateECKeypairRequest)
 	if err != nil {
 		panic(fmt.Errorf("Generate Bob EC key pair error: %s", err))
 	}
-	fmt.Println("Generated Bob EC key pairs")
+	fmt.Println("Generated Bob EC key pair")
 
 	// Derive AES key for Alice
 	deriveKeyTemplate := util.NewAttributeMap(
@@ -758,7 +748,7 @@ func Example_deriveKey() {
 	return
 
 	// Output:
-	// Generated Alice EC key pairs
-	// Generated Bob EC key pairs
+	// Generated Alice EC key pair
+	// Generated Bob EC key pair
 	// Alice and Bob get the same derived key
 }

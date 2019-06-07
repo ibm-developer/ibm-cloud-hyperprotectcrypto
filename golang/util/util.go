@@ -219,10 +219,10 @@ func GetPubkeyBytesFromSPKI(spki []byte) ([]byte, error) {
 type IAMPerRPCCredentials struct {
 	expiration  time.Time
 	updateLock  sync.Mutex
-	AccessToken string
-	Instance    string
-	APIKey      string
-	Endpoint    string
+	Instance    string // Always Required - IBM Cloud HPCS instance ID
+	AccessToken string // Required if APIKey nor Endpoint are specified - IBM Cloud IAM access token
+	APIKey      string // Required if AccessToken is not specified - IBM Cloud API key
+	Endpoint    string // Required if AccessToken is not specified - IBM Cloud IAM endpoint
 }
 
 // GetRequestMetadata is used by GRPC for authentication
