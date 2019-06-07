@@ -3,6 +3,7 @@ package examples
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"crypto/tls"
 	"encoding/asn1"
 	"fmt"
@@ -23,7 +24,7 @@ var callOpts = []grpc.DialOption{
 	grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
 	grpc.WithPerRPCCredentials(&util.IAMPerRPCCredentials{
 		APIKey:   "<ibm_cloud_apikey>",
-		Endpoint: "https://<iam_ibm_cloud_endpoint>",
+		Endpoint: "<https://<iam_ibm_cloud_endpoint>",
 		Instance: "<hpcs_instance_id>",
 	}),
 }
@@ -60,7 +61,7 @@ func Example_getMechanismInfo() {
 }
 
 // Example_encryptAndDecrypt encrypts and decrypts plain text
-// Flow: connect, generate AES key, generate IV, encrypt data, decrypt data
+// Flow: connect, generate AES key, generate IV, encrypt multi-part data, decrypt multi-part data
 func Example_encryptAndDecrypt() {
 	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
@@ -197,7 +198,7 @@ func Example_encryptAndDecrypt() {
 }
 
 // Example_digest calculates the digest of some plain text
-// Flow: connect, generate digest from data
+// Flow: connect, digest single-part data, digest multi-part data
 func Example_digest() {
 	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
@@ -263,7 +264,7 @@ func Example_digest() {
 }
 
 // Example_signAndVerifyUsingRSAKeyPair signs some data and verifies it
-// Flow: connect, generate RSA key pair, sign data, verify data
+// Flow: connect, generate RSA key pair, sign single-part data, verify single-part data
 func Example_signAndVerifyUsingRSAKeyPair() {
 	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
@@ -311,7 +312,8 @@ func Example_signAndVerifyUsingRSAKeyPair() {
 	if err != nil {
 		panic(fmt.Errorf("SignInit error: %s", err))
 	}
-	signData := []byte("This data needs to be signed")
+
+	signData := sha256.New().Sum([]byte("This data needs to be signed"))
 	signRequest := &pb.SignRequest{
 		State: signInitResponse.State,
 		Data:  signData,
@@ -352,7 +354,7 @@ func Example_signAndVerifyUsingRSAKeyPair() {
 }
 
 // Example_signAndVerifyUsingECDSAKeyPair generates an ECDSA key pair and uses the key pair to sign and verify data
-// Flow: connect, generate ECDSA key pair, sign data, verify data
+// Flow: connect, generate ECDSA key pair, sign single-part data, verify single-part data
 func Example_signAndVerifyUsingECDSAKeyPair() {
 	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
@@ -397,7 +399,7 @@ func Example_signAndVerifyUsingECDSAKeyPair() {
 	if err != nil {
 		panic(fmt.Errorf("SignInit error: %s", err))
 	}
-	signData := []byte("This data needs to be signed")
+	signData := sha256.New().Sum([]byte("This data needs to be signed"))
 	signRequest := &pb.SignRequest{
 		State: signInitResponse.State,
 		Data:  signData,
@@ -438,7 +440,8 @@ func Example_signAndVerifyUsingECDSAKeyPair() {
 }
 
 // Example_signAndVerifyToTestErrorHandling signs some data, modifies the signature and verifies the expected returned error code
-// Flow: connect, generate ECDSA key pair, sign data, modify signature to force verify error, verify data, ensure proper error is returned
+// Flow: connect, generate ECDSA key pair, sign single-part data, modify signature to force verify error,
+//                verify single-part data, ensure proper error is returned
 func Example_signAndVerifyToTestErrorHandling() {
 	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
@@ -483,7 +486,7 @@ func Example_signAndVerifyToTestErrorHandling() {
 	if err != nil {
 		panic(fmt.Errorf("SignInit error: %s", err))
 	}
-	signData := []byte("This data needs to be signed")
+	signData := sha256.New().Sum([]byte("This data needs to be signed"))
 	signRequest := &pb.SignRequest{
 		State: signInitResponse.State,
 		Data:  signData,
@@ -527,7 +530,7 @@ func Example_signAndVerifyToTestErrorHandling() {
 }
 
 // Example_wrapAndUnWrapKey wraps an AES key with a RSA public key and then unwraps it with the private key
-// Flow: connect, generate AES key, generate RSA key pair, wrap RSA key pair, unwrap RSA key pair
+// Flow: connect, generate AES key, generate RSA key pair, wrap/unwrap AES key with RSA key pair
 func Example_wrapAndUnwrapKey() {
 	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {
@@ -627,9 +630,9 @@ func Example_wrapAndUnwrapKey() {
 	// Unwraped AES key
 }
 
-// Example_deriveKey generates ECDH key pairs for Bob and Alice and then generates AES keys for both of them.
+// Example_deriveKey generates ECDHE key pairs for Bob and Alice and then generates AES keys for both of them.
 // The names Alice and Bob are described in https://en.wikipedia.org/wiki/Diffie–Hellman_key_exchange.
-// Flow: connect, generate ECDH key pairs, derive AES key for Bob, derive AES key for Alice, encrypt with Alice's key and decrypt with Bob's key
+// Flow: connect, generate key pairs, derive AES key for Bob, derive AES key for Alice, encrypt with Alice's AES key and decrypt with Bob's AES key
 func Example_deriveKey() {
 	conn, err := grpc.Dial(address, callOpts...)
 	if err != nil {

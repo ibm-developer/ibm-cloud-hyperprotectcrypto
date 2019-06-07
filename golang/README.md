@@ -1,15 +1,23 @@
 # Overview
 
 1. [Install Golang](https://golang.org/doc/install) and ensure that your cloned repository is in your GOPATH.
-2. Update the following information in the *examples/server_test.go* file.  
+2. Update the following information in the [examples/server_test.go](examples/server_test.go#L20) file.  
 
-	*NOTE: This information can obtained by logging in to your IBM Cloud account and viewing your Hyper Protect Crypto Serverices (HPCS) instance and IAM information. See the [HPCS documentation](https://cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-get-started) for more information about the IBM Cloud HPCS offering.*
+	*NOTE: This information can obtained by logging in to your IBM Cloud account and viewing your Hyper Protect Crypto Serverices (HPCS) instance and IAM information. See the [GREP11 API documentation](https://test.cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-grep11-api-ref) for more information about GREP11*.
 
-	- [GREP11 server address](examples/server_test.go#L20)
-	- [IBM Cloud API key](examples/server_test.go#L25)
-	- [IBM Cloud IAM endpoint](examples/server_test.go#L26)
-	- [HPCS Crypto Instance ID](examples/server_test.go#L27)
+	```Golang
+	// The following IBM Cloud items need to be changed prior to running the sample program
+	const address = "<grep11_server_address>:<port>"
 
+	var callOpts = []grpc.DialOption{
+		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
+		grpc.WithPerRPCCredentials(&util.IAMPerRPCCredentials{
+			APIKey:   "<ibm_cloud_apikey>",
+			Endpoint: "<https://<iam_ibm_cloud_endpoint>",
+			Instance: "<hpcs_instance_id>",
+		}),
+	}
+	```
 		
 3. `cd $GOPATH/src/github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/examples`
 4. Execute the examples by issuing the command: `go test -v`

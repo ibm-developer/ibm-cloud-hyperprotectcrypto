@@ -219,8 +219,8 @@ func GetPubkeyBytesFromSPKI(spki []byte) ([]byte, error) {
 type IAMPerRPCCredentials struct {
 	expiration  time.Time
 	updateLock  sync.Mutex
+	Instance    string // Always Required - IBM Cloud HPCS instance ID
 	AccessToken string // Required if APIKey nor Endpoint are specified - IBM Cloud IAM access token
-	Instance    string // Required - IBM Cloud HPCS instance ID
 	APIKey      string // Required if AccessToken is not specified - IBM Cloud API key
 	Endpoint    string // Required if AccessToken is not specified - IBM Cloud IAM endpoint
 }
