@@ -90,8 +90,8 @@ const (
 	CKA_MODIFIABLE                 Attribute = 0x00000170
 	CKA_COPYABLE                   Attribute = 0x00000171
 	CKA_DESTROYABLE                Attribute = 0x00000172
-	CKA_EC_PARAMS                  Attribute = 0x00000180
 	CKA_ECDSA_PARAMS               Attribute = 0x00000180
+	CKA_EC_PARAMS                  Attribute = 0x00000180
 	CKA_EC_POINT                   Attribute = 0x00000181
 	CKA_SECONDARY_AUTH             Attribute = 0x00000200
 	CKA_AUTH_PIN_FLAGS             Attribute = 0x00000201
@@ -337,10 +337,10 @@ const (
 	CKM_CAST5_CBC                      Mechanism = 0x00000322
 	CKM_CAST128_MAC                    Mechanism = 0x00000323
 	CKM_CAST5_MAC                      Mechanism = 0x00000323
-	CKM_CAST5_MAC_GENERAL              Mechanism = 0x00000324
 	CKM_CAST128_MAC_GENERAL            Mechanism = 0x00000324
-	CKM_CAST5_CBC_PAD                  Mechanism = 0x00000325
+	CKM_CAST5_MAC_GENERAL              Mechanism = 0x00000324
 	CKM_CAST128_CBC_PAD                Mechanism = 0x00000325
+	CKM_CAST5_CBC_PAD                  Mechanism = 0x00000325
 	CKM_RC5_KEY_GEN                    Mechanism = 0x00000330
 	CKM_RC5_ECB                        Mechanism = 0x00000331
 	CKM_RC5_CBC                        Mechanism = 0x00000332
@@ -381,8 +381,8 @@ const (
 	CKM_PBE_MD5_DES_CBC                Mechanism = 0x000003a1
 	CKM_PBE_MD5_CAST_CBC               Mechanism = 0x000003a2
 	CKM_PBE_MD5_CAST3_CBC              Mechanism = 0x000003a3
-	CKM_PBE_MD5_CAST5_CBC              Mechanism = 0x000003a4
 	CKM_PBE_MD5_CAST128_CBC            Mechanism = 0x000003a4
+	CKM_PBE_MD5_CAST5_CBC              Mechanism = 0x000003a4
 	CKM_PBE_SHA1_CAST128_CBC           Mechanism = 0x000003a5
 	CKM_PBE_SHA1_CAST5_CBC             Mechanism = 0x000003a5
 	CKM_PBE_SHA1_RC4_128               Mechanism = 0x000003a6
@@ -593,21 +593,21 @@ const (
 	CKM_IBM_EPX                        Mechanism = CKM_VENDOR_DEFINED + 0x61100000
 	CKM_IBM_EPX_WPRM                   Mechanism = CKM_VENDOR_DEFINED + 0x61110000
 
-	CKF_TOKEN_PRESENT                  MechanismInfoFlag = 0x00000001
-	CKF_NEXT_OTP                       MechanismInfoFlag = 0x00000001
-	CKF_LIBRARY_CANT_CREATE_OS_THREADS MechanismInfoFlag = 0x00000001
-	CKF_RNG                            MechanismInfoFlag = 0x00000001
-	CKF_HW                             MechanismInfoFlag = 0x00000001
 	CKF_DONT_BLOCK                     MechanismInfoFlag = 0x00000001
+	CKF_HW                             MechanismInfoFlag = 0x00000001
+	CKF_LIBRARY_CANT_CREATE_OS_THREADS MechanismInfoFlag = 0x00000001
+	CKF_NEXT_OTP                       MechanismInfoFlag = 0x00000001
+	CKF_RNG                            MechanismInfoFlag = 0x00000001
+	CKF_TOKEN_PRESENT                  MechanismInfoFlag = 0x00000001
+	CKF_EXCLUDE_TIME                   MechanismInfoFlag = 0x00000002
 	CKF_OS_LOCKING_OK                  MechanismInfoFlag = 0x00000002
 	CKF_REMOVABLE_DEVICE               MechanismInfoFlag = 0x00000002
-	CKF_WRITE_PROTECTED                MechanismInfoFlag = 0x00000002
-	CKF_EXCLUDE_TIME                   MechanismInfoFlag = 0x00000002
 	CKF_RW_SESSION                     MechanismInfoFlag = 0x00000002
-	CKF_SERIAL_SESSION                 MechanismInfoFlag = 0x00000004
+	CKF_WRITE_PROTECTED                MechanismInfoFlag = 0x00000002
 	CKF_EXCLUDE_COUNTER                MechanismInfoFlag = 0x00000004
-	CKF_LOGIN_REQUIRED                 MechanismInfoFlag = 0x00000004
 	CKF_HW_SLOT                        MechanismInfoFlag = 0x00000004
+	CKF_LOGIN_REQUIRED                 MechanismInfoFlag = 0x00000004
+	CKF_SERIAL_SESSION                 MechanismInfoFlag = 0x00000004
 	CKF_EXCLUDE_CHALLENGE              MechanismInfoFlag = 0x00000008
 	CKF_USER_PIN_INITIALIZED           MechanismInfoFlag = 0x00000008
 	CKF_EXCLUDE_PIN                    MechanismInfoFlag = 0x00000010
@@ -616,8 +616,8 @@ const (
 	CKF_CLOCK_ON_TOKEN                 MechanismInfoFlag = 0x00000040
 	CKF_ENCRYPT                        MechanismInfoFlag = 0x00000100
 	CKF_PROTECTED_AUTHENTICATION_PATH  MechanismInfoFlag = 0x00000100
-	CKF_DUAL_CRYPTO_OPERATIONS         MechanismInfoFlag = 0x00000200
 	CKF_DECRYPT                        MechanismInfoFlag = 0x00000200
+	CKF_DUAL_CRYPTO_OPERATIONS         MechanismInfoFlag = 0x00000200
 	CKF_DIGEST                         MechanismInfoFlag = 0x00000400
 	CKF_TOKEN_INITIALIZED              MechanismInfoFlag = 0x00000400
 	CKF_SECONDARY_AUTHENTICATION       MechanismInfoFlag = 0x00000800
@@ -626,20 +626,20 @@ const (
 	CKF_VERIFY                         MechanismInfoFlag = 0x00002000
 	CKF_VERIFY_RECOVER                 MechanismInfoFlag = 0x00004000
 	CKF_GENERATE                       MechanismInfoFlag = 0x00008000
-	CKF_USER_PIN_COUNT_LOW             MechanismInfoFlag = 0x00010000
 	CKF_GENERATE_KEY_PAIR              MechanismInfoFlag = 0x00010000
+	CKF_USER_PIN_COUNT_LOW             MechanismInfoFlag = 0x00010000
 	CKF_USER_PIN_FINAL_TRY             MechanismInfoFlag = 0x00020000
 	CKF_WRAP                           MechanismInfoFlag = 0x00020000
-	CKF_USER_PIN_LOCKED                MechanismInfoFlag = 0x00040000
 	CKF_UNWRAP                         MechanismInfoFlag = 0x00040000
-	CKF_USER_PIN_TO_BE_CHANGED         MechanismInfoFlag = 0x00080000
+	CKF_USER_PIN_LOCKED                MechanismInfoFlag = 0x00040000
 	CKF_DERIVE                         MechanismInfoFlag = 0x00080000
-	CKF_SO_PIN_COUNT_LOW               MechanismInfoFlag = 0x00100000
+	CKF_USER_PIN_TO_BE_CHANGED         MechanismInfoFlag = 0x00080000
 	CKF_EC_F_P                         MechanismInfoFlag = 0x00100000
-	CKF_SO_PIN_FINAL_TRY               MechanismInfoFlag = 0x00200000
+	CKF_SO_PIN_COUNT_LOW               MechanismInfoFlag = 0x00100000
 	CKF_EC_F_2M                        MechanismInfoFlag = 0x00200000
-	CKF_SO_PIN_LOCKED                  MechanismInfoFlag = 0x00400000
+	CKF_SO_PIN_FINAL_TRY               MechanismInfoFlag = 0x00200000
 	CKF_EC_ECPARAMETERS                MechanismInfoFlag = 0x00400000
+	CKF_SO_PIN_LOCKED                  MechanismInfoFlag = 0x00400000
 	CKF_EC_NAMEDCURVE                  MechanismInfoFlag = 0x00800000
 	CKF_SO_PIN_TO_BE_CHANGED           MechanismInfoFlag = 0x00800000
 	CKF_EC_UNCOMPRESS                  MechanismInfoFlag = 0x01000000
@@ -776,8 +776,26 @@ const (
 	CKR_IBM_GREP11_CANNOT_MARSHAL        Return = CKR_VENDOR_DEFINED_GREP11 + 0x3
 	CKR_IBM_GREP11_CONFLICT              Return = CKR_VENDOR_DEFINED_GREP11 + 0x4
 	CKR_IBM_GREP11_DBINTERNAL            Return = CKR_VENDOR_DEFINED_GREP11 + 0x5
-	CKR_IBM_GREP11_SERVER_CONFIG         Return = CKR_VENDOR_DEFINED_GREP11 + 0x6
-	CKR_IBM_GREP11_SERVER_INTERNAL       Return = CKR_VENDOR_DEFINED_GREP11 + 0x7
+	CKR_IBM_GREP11_SERVER_INTERNAL       Return = CKR_VENDOR_DEFINED_GREP11 + 0x6
+
+	// Maximum Key Size
+	MAX_BLOB_SIZE = 8192
+	MAX_CSUMSIZE  = 64
+
+	// Max block size of block ciphers
+	MAX_BLOCK_SIZE = 256 / 8
+	AES_BLOCK_SIZE = 16
+	DES_BLOCK_SIZE = 8
+
+	// Max digest output bytes
+	MAX_DIGEST_BYTES = 512 / 8
+
+	// MAX_DIGEST_STATE_BYTES is the maximum size of wrapped digest state blobs
+	//   -- Section 10.1 Function descriptions, EP11 design Document
+	MAX_DIGEST_STATE_BYTES = 1024
+	MAX_CRYPT_STATE_BYTES  = 8192
+
+	CK_UNAVAILABLE_INFORMATION uint64 = 0xFFFFFFFFFFFFFFFF
 )
 
 var (
@@ -844,8 +862,8 @@ var (
 		"CKA_MODIFIABLE":                 CKA_MODIFIABLE,
 		"CKA_COPYABLE":                   CKA_COPYABLE,
 		"CKA_DESTROYABLE":                CKA_DESTROYABLE,
-		"CKA_EC_PARAMS":                  CKA_EC_PARAMS,
 		"CKA_ECDSA_PARAMS":               CKA_ECDSA_PARAMS,
+		"CKA_EC_PARAMS":                  CKA_EC_PARAMS,
 		"CKA_EC_POINT":                   CKA_EC_POINT,
 		"CKA_SECONDARY_AUTH":             CKA_SECONDARY_AUTH,
 		"CKA_AUTH_PIN_FLAGS":             CKA_AUTH_PIN_FLAGS,
@@ -906,23 +924,23 @@ var (
 		"CKA_IBM_EPX":                    CKA_IBM_EPX,
 	}
 	_AttributeValueToName = map[Attribute]string{
-		CKA_CLASS:                     "CKA_CLASS",
-		CKA_TOKEN:                     "CKA_TOKEN",
-		CKA_PRIVATE:                   "CKA_PRIVATE",
-		CKA_LABEL:                     "CKA_LABEL",
-		CKA_APPLICATION:               "CKA_APPLICATION",
-		CKA_VALUE:                     "CKA_VALUE",
-		CKA_OBJECT_ID:                 "CKA_OBJECT_ID",
-		CKA_CERTIFICATE_TYPE:          "CKA_CERTIFICATE_TYPE",
-		CKA_ISSUER:                    "CKA_ISSUER",
-		CKA_SERIAL_NUMBER:             "CKA_SERIAL_NUMBER",
-		CKA_AC_ISSUER:                 "CKA_AC_ISSUER",
-		CKA_OWNER:                     "CKA_OWNER",
-		CKA_ATTR_TYPES:                "CKA_ATTR_TYPES",
-		CKA_TRUSTED:                   "CKA_TRUSTED",
-		CKA_CERTIFICATE_CATEGORY:      "CKA_CERTIFICATE_CATEGORY",
-		CKA_JAVA_MIDP_SECURITY_DOMAIN: "CKA_JAVA_MIDP_SECURITY_DOMAIN",
-		CKA_URL: "CKA_URL",
+		CKA_CLASS:                      "CKA_CLASS",
+		CKA_TOKEN:                      "CKA_TOKEN",
+		CKA_PRIVATE:                    "CKA_PRIVATE",
+		CKA_LABEL:                      "CKA_LABEL",
+		CKA_APPLICATION:                "CKA_APPLICATION",
+		CKA_VALUE:                      "CKA_VALUE",
+		CKA_OBJECT_ID:                  "CKA_OBJECT_ID",
+		CKA_CERTIFICATE_TYPE:           "CKA_CERTIFICATE_TYPE",
+		CKA_ISSUER:                     "CKA_ISSUER",
+		CKA_SERIAL_NUMBER:              "CKA_SERIAL_NUMBER",
+		CKA_AC_ISSUER:                  "CKA_AC_ISSUER",
+		CKA_OWNER:                      "CKA_OWNER",
+		CKA_ATTR_TYPES:                 "CKA_ATTR_TYPES",
+		CKA_TRUSTED:                    "CKA_TRUSTED",
+		CKA_CERTIFICATE_CATEGORY:       "CKA_CERTIFICATE_CATEGORY",
+		CKA_JAVA_MIDP_SECURITY_DOMAIN:  "CKA_JAVA_MIDP_SECURITY_DOMAIN",
+		CKA_URL:                        "CKA_URL",
 		CKA_HASH_OF_SUBJECT_PUBLIC_KEY: "CKA_HASH_OF_SUBJECT_PUBLIC_KEY",
 		CKA_HASH_OF_ISSUER_PUBLIC_KEY:  "CKA_HASH_OF_ISSUER_PUBLIC_KEY",
 		CKA_NAME_HASH_ALGORITHM:        "CKA_NAME_HASH_ALGORITHM",
@@ -1265,10 +1283,10 @@ var (
 		"CKM_CAST5_CBC":                      CKM_CAST5_CBC,
 		"CKM_CAST128_MAC":                    CKM_CAST128_MAC,
 		"CKM_CAST5_MAC":                      CKM_CAST5_MAC,
-		"CKM_CAST5_MAC_GENERAL":              CKM_CAST5_MAC_GENERAL,
 		"CKM_CAST128_MAC_GENERAL":            CKM_CAST128_MAC_GENERAL,
-		"CKM_CAST5_CBC_PAD":                  CKM_CAST5_CBC_PAD,
+		"CKM_CAST5_MAC_GENERAL":              CKM_CAST5_MAC_GENERAL,
 		"CKM_CAST128_CBC_PAD":                CKM_CAST128_CBC_PAD,
+		"CKM_CAST5_CBC_PAD":                  CKM_CAST5_CBC_PAD,
 		"CKM_RC5_KEY_GEN":                    CKM_RC5_KEY_GEN,
 		"CKM_RC5_ECB":                        CKM_RC5_ECB,
 		"CKM_RC5_CBC":                        CKM_RC5_CBC,
@@ -1309,8 +1327,8 @@ var (
 		"CKM_PBE_MD5_DES_CBC":                CKM_PBE_MD5_DES_CBC,
 		"CKM_PBE_MD5_CAST_CBC":               CKM_PBE_MD5_CAST_CBC,
 		"CKM_PBE_MD5_CAST3_CBC":              CKM_PBE_MD5_CAST3_CBC,
-		"CKM_PBE_MD5_CAST5_CBC":              CKM_PBE_MD5_CAST5_CBC,
 		"CKM_PBE_MD5_CAST128_CBC":            CKM_PBE_MD5_CAST128_CBC,
+		"CKM_PBE_MD5_CAST5_CBC":              CKM_PBE_MD5_CAST5_CBC,
 		"CKM_PBE_SHA1_CAST128_CBC":           CKM_PBE_SHA1_CAST128_CBC,
 		"CKM_PBE_SHA1_CAST5_CBC":             CKM_PBE_SHA1_CAST5_CBC,
 		"CKM_PBE_SHA1_RC4_128":               CKM_PBE_SHA1_RC4_128,
@@ -1905,60 +1923,60 @@ var (
 		CKM_IBM_EPX_WPRM:                   "CKM_IBM_EPX_WPRM",
 	}
 	_MechanismInfoFlagNameToValue = map[string]MechanismInfoFlag{
-		"CKF_TOKEN_PRESENT":                  CKF_TOKEN_PRESENT,
-		"CKF_NEXT_OTP":                       CKF_NEXT_OTP,
+		"CKF_DONT_BLOCK":                     CKF_DONT_BLOCK,
+		"CKF_HW":                             CKF_HW,
 		"CKF_LIBRARY_CANT_CREATE_OS_THREADS": CKF_LIBRARY_CANT_CREATE_OS_THREADS,
-		"CKF_RNG":                           CKF_RNG,
-		"CKF_HW":                            CKF_HW,
-		"CKF_DONT_BLOCK":                    CKF_DONT_BLOCK,
-		"CKF_OS_LOCKING_OK":                 CKF_OS_LOCKING_OK,
-		"CKF_REMOVABLE_DEVICE":              CKF_REMOVABLE_DEVICE,
-		"CKF_WRITE_PROTECTED":               CKF_WRITE_PROTECTED,
-		"CKF_EXCLUDE_TIME":                  CKF_EXCLUDE_TIME,
-		"CKF_RW_SESSION":                    CKF_RW_SESSION,
-		"CKF_SERIAL_SESSION":                CKF_SERIAL_SESSION,
-		"CKF_EXCLUDE_COUNTER":               CKF_EXCLUDE_COUNTER,
-		"CKF_LOGIN_REQUIRED":                CKF_LOGIN_REQUIRED,
-		"CKF_HW_SLOT":                       CKF_HW_SLOT,
-		"CKF_EXCLUDE_CHALLENGE":             CKF_EXCLUDE_CHALLENGE,
-		"CKF_USER_PIN_INITIALIZED":          CKF_USER_PIN_INITIALIZED,
-		"CKF_EXCLUDE_PIN":                   CKF_EXCLUDE_PIN,
-		"CKF_RESTORE_KEY_NOT_NEEDED":        CKF_RESTORE_KEY_NOT_NEEDED,
-		"CKF_USER_FRIENDLY_OTP":             CKF_USER_FRIENDLY_OTP,
-		"CKF_CLOCK_ON_TOKEN":                CKF_CLOCK_ON_TOKEN,
-		"CKF_ENCRYPT":                       CKF_ENCRYPT,
-		"CKF_PROTECTED_AUTHENTICATION_PATH": CKF_PROTECTED_AUTHENTICATION_PATH,
-		"CKF_DUAL_CRYPTO_OPERATIONS":        CKF_DUAL_CRYPTO_OPERATIONS,
-		"CKF_DECRYPT":                       CKF_DECRYPT,
-		"CKF_DIGEST":                        CKF_DIGEST,
-		"CKF_TOKEN_INITIALIZED":             CKF_TOKEN_INITIALIZED,
-		"CKF_SECONDARY_AUTHENTICATION":      CKF_SECONDARY_AUTHENTICATION,
-		"CKF_SIGN":                          CKF_SIGN,
-		"CKF_SIGN_RECOVER":                  CKF_SIGN_RECOVER,
-		"CKF_VERIFY":                        CKF_VERIFY,
-		"CKF_VERIFY_RECOVER":                CKF_VERIFY_RECOVER,
-		"CKF_GENERATE":                      CKF_GENERATE,
-		"CKF_USER_PIN_COUNT_LOW":            CKF_USER_PIN_COUNT_LOW,
-		"CKF_GENERATE_KEY_PAIR":             CKF_GENERATE_KEY_PAIR,
-		"CKF_USER_PIN_FINAL_TRY":            CKF_USER_PIN_FINAL_TRY,
-		"CKF_WRAP":                          CKF_WRAP,
-		"CKF_USER_PIN_LOCKED":               CKF_USER_PIN_LOCKED,
-		"CKF_UNWRAP":                        CKF_UNWRAP,
-		"CKF_USER_PIN_TO_BE_CHANGED":        CKF_USER_PIN_TO_BE_CHANGED,
-		"CKF_DERIVE":                        CKF_DERIVE,
-		"CKF_SO_PIN_COUNT_LOW":              CKF_SO_PIN_COUNT_LOW,
-		"CKF_EC_F_P":                        CKF_EC_F_P,
-		"CKF_SO_PIN_FINAL_TRY":              CKF_SO_PIN_FINAL_TRY,
-		"CKF_EC_F_2M":                       CKF_EC_F_2M,
-		"CKF_SO_PIN_LOCKED":                 CKF_SO_PIN_LOCKED,
-		"CKF_EC_ECPARAMETERS":               CKF_EC_ECPARAMETERS,
-		"CKF_EC_NAMEDCURVE":                 CKF_EC_NAMEDCURVE,
-		"CKF_SO_PIN_TO_BE_CHANGED":          CKF_SO_PIN_TO_BE_CHANGED,
-		"CKF_EC_UNCOMPRESS":                 CKF_EC_UNCOMPRESS,
-		"CKF_ERROR_STATE":                   CKF_ERROR_STATE,
-		"CKF_EC_COMPRESS":                   CKF_EC_COMPRESS,
-		"CKF_ARRAY_ATTRIBUTE":               CKF_ARRAY_ATTRIBUTE,
-		"CKF_EXTENSION":                     CKF_EXTENSION,
+		"CKF_NEXT_OTP":                       CKF_NEXT_OTP,
+		"CKF_RNG":                            CKF_RNG,
+		"CKF_TOKEN_PRESENT":                  CKF_TOKEN_PRESENT,
+		"CKF_EXCLUDE_TIME":                   CKF_EXCLUDE_TIME,
+		"CKF_OS_LOCKING_OK":                  CKF_OS_LOCKING_OK,
+		"CKF_REMOVABLE_DEVICE":               CKF_REMOVABLE_DEVICE,
+		"CKF_RW_SESSION":                     CKF_RW_SESSION,
+		"CKF_WRITE_PROTECTED":                CKF_WRITE_PROTECTED,
+		"CKF_EXCLUDE_COUNTER":                CKF_EXCLUDE_COUNTER,
+		"CKF_HW_SLOT":                        CKF_HW_SLOT,
+		"CKF_LOGIN_REQUIRED":                 CKF_LOGIN_REQUIRED,
+		"CKF_SERIAL_SESSION":                 CKF_SERIAL_SESSION,
+		"CKF_EXCLUDE_CHALLENGE":              CKF_EXCLUDE_CHALLENGE,
+		"CKF_USER_PIN_INITIALIZED":           CKF_USER_PIN_INITIALIZED,
+		"CKF_EXCLUDE_PIN":                    CKF_EXCLUDE_PIN,
+		"CKF_RESTORE_KEY_NOT_NEEDED":         CKF_RESTORE_KEY_NOT_NEEDED,
+		"CKF_USER_FRIENDLY_OTP":              CKF_USER_FRIENDLY_OTP,
+		"CKF_CLOCK_ON_TOKEN":                 CKF_CLOCK_ON_TOKEN,
+		"CKF_ENCRYPT":                        CKF_ENCRYPT,
+		"CKF_PROTECTED_AUTHENTICATION_PATH":  CKF_PROTECTED_AUTHENTICATION_PATH,
+		"CKF_DECRYPT":                        CKF_DECRYPT,
+		"CKF_DUAL_CRYPTO_OPERATIONS":         CKF_DUAL_CRYPTO_OPERATIONS,
+		"CKF_DIGEST":                         CKF_DIGEST,
+		"CKF_TOKEN_INITIALIZED":              CKF_TOKEN_INITIALIZED,
+		"CKF_SECONDARY_AUTHENTICATION":       CKF_SECONDARY_AUTHENTICATION,
+		"CKF_SIGN":                           CKF_SIGN,
+		"CKF_SIGN_RECOVER":                   CKF_SIGN_RECOVER,
+		"CKF_VERIFY":                         CKF_VERIFY,
+		"CKF_VERIFY_RECOVER":                 CKF_VERIFY_RECOVER,
+		"CKF_GENERATE":                       CKF_GENERATE,
+		"CKF_GENERATE_KEY_PAIR":              CKF_GENERATE_KEY_PAIR,
+		"CKF_USER_PIN_COUNT_LOW":             CKF_USER_PIN_COUNT_LOW,
+		"CKF_USER_PIN_FINAL_TRY":             CKF_USER_PIN_FINAL_TRY,
+		"CKF_WRAP":                           CKF_WRAP,
+		"CKF_UNWRAP":                         CKF_UNWRAP,
+		"CKF_USER_PIN_LOCKED":                CKF_USER_PIN_LOCKED,
+		"CKF_DERIVE":                         CKF_DERIVE,
+		"CKF_USER_PIN_TO_BE_CHANGED":         CKF_USER_PIN_TO_BE_CHANGED,
+		"CKF_EC_F_P":                         CKF_EC_F_P,
+		"CKF_SO_PIN_COUNT_LOW":               CKF_SO_PIN_COUNT_LOW,
+		"CKF_EC_F_2M":                        CKF_EC_F_2M,
+		"CKF_SO_PIN_FINAL_TRY":               CKF_SO_PIN_FINAL_TRY,
+		"CKF_EC_ECPARAMETERS":                CKF_EC_ECPARAMETERS,
+		"CKF_SO_PIN_LOCKED":                  CKF_SO_PIN_LOCKED,
+		"CKF_EC_NAMEDCURVE":                  CKF_EC_NAMEDCURVE,
+		"CKF_SO_PIN_TO_BE_CHANGED":           CKF_SO_PIN_TO_BE_CHANGED,
+		"CKF_EC_UNCOMPRESS":                  CKF_EC_UNCOMPRESS,
+		"CKF_ERROR_STATE":                    CKF_ERROR_STATE,
+		"CKF_EC_COMPRESS":                    CKF_EC_COMPRESS,
+		"CKF_ARRAY_ATTRIBUTE":                CKF_ARRAY_ATTRIBUTE,
+		"CKF_EXTENSION":                      CKF_EXTENSION,
 	}
 	_MechanismInfoFlagValueToName = map[MechanismInfoFlag]string{}
 	_ObjectClassNameToValue       = map[string]ObjectClass{
@@ -2103,7 +2121,6 @@ var (
 		"CKR_IBM_GREP11_CANNOT_MARSHAL":        CKR_IBM_GREP11_CANNOT_MARSHAL,
 		"CKR_IBM_GREP11_CONFLICT":              CKR_IBM_GREP11_CONFLICT,
 		"CKR_IBM_GREP11_DBINTERNAL":            CKR_IBM_GREP11_DBINTERNAL,
-		"CKR_IBM_GREP11_SERVER_CONFIG":         CKR_IBM_GREP11_SERVER_CONFIG,
 		"CKR_IBM_GREP11_SERVER_INTERNAL":       CKR_IBM_GREP11_SERVER_INTERNAL,
 	}
 	_ReturnValueToName = map[Return]string{
@@ -2224,7 +2241,6 @@ var (
 		CKR_IBM_GREP11_CANNOT_MARSHAL:        "CKR_IBM_GREP11_CANNOT_MARSHAL",
 		CKR_IBM_GREP11_CONFLICT:              "CKR_IBM_GREP11_CONFLICT",
 		CKR_IBM_GREP11_DBINTERNAL:            "CKR_IBM_GREP11_DBINTERNAL",
-		CKR_IBM_GREP11_SERVER_CONFIG:         "CKR_IBM_GREP11_SERVER_CONFIG",
 		CKR_IBM_GREP11_SERVER_INTERNAL:       "CKR_IBM_GREP11_SERVER_INTERNAL",
 	}
 )
