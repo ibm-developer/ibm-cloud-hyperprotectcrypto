@@ -10,448 +10,272 @@ syntax = "proto3";
 
 package grep11;
 
+
 import "gogo.proto";
-import "google/api/annotations.proto";
+
+option java_multiple_files = true;
+option java_package = "com.ibm.crypto.grep11.grpc";
 
 service Crypto {
 // See https://www-03.ibm.com/security/cryptocards/pciecc/pdf/ep11-structure.pdf for
 // further documentation
+
 	// CK_RV m_GenerateRandom (
-	//     CK_BYTE_PTR rnd, CK_ULONG rndlen, 
+	//     CK_BYTE_PTR rnd, CK_ULONG rndlen,
 	//     target_t target) ;
-	rpc GenerateRandom(GenerateRandomRequest) returns (GenerateRandomResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/GenerateRandom"
-		  body: "*"
-	    };
-	}
+	rpc GenerateRandom(GenerateRandomRequest) returns (GenerateRandomResponse) {}
 
 	// CK_RV m_DigestInit (
-	//     unsigned char *state, size_t *statelen, 
-	//     const CK_MECHANISM_PTR mech, 
+	//     unsigned char *state, size_t *statelen,
+	//     const CK_MECHANISM_PTR mech,
 	//     target_t target) ;
-	rpc DigestInit(DigestInitRequest) returns (DigestInitResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DigestInit"
-		  body: "*"
-	    };
-	}
+	rpc DigestInit(DigestInitRequest) returns (DigestInitResponse) {}
 
 	// CK_RV m_Digest (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
-	//     CK_BYTE_PTR digest, CK_ULONG_PTR digestlen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
+	//     CK_BYTE_PTR digest, CK_ULONG_PTR digestlen,
 	//     target_t target) ;
-	rpc Digest(DigestRequest) returns (DigestResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/Digest"
-		  body: "*"
-	    };
-	}
+	rpc Digest(DigestRequest) returns (DigestResponse) {}
 
 	// CK_RV m_DigestUpdate (
-	//     unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
+	//     unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
 	//     target_t target) ;
-	rpc DigestUpdate(DigestUpdateRequest) returns (DigestUpdateResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DigestUpdate"
-		  body: "*"
-	    };
-	}
+	rpc DigestUpdate(DigestUpdateRequest) returns (DigestUpdateResponse) {}
 
 	// CK_RV m_DigestKey (
-	//     unsigned char *state, size_t statelen, 
-	//     const unsigned char *key, size_t keylen, 
+	//     unsigned char *state, size_t statelen,
+	//     const unsigned char *key, size_t keylen,
 	//     target_t target) ;
-	rpc DigestKey(DigestKeyRequest) returns (DigestKeyResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DigestKey"
-		  body: "*"
-	    };
-	}
+	rpc DigestKey(DigestKeyRequest) returns (DigestKeyResponse) {}
 
 	// CK_RV m_DigestFinal (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR digest, CK_ULONG_PTR digestlen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR digest, CK_ULONG_PTR digestlen,
 	//     target_t target) ;
-	rpc DigestFinal(DigestFinalRequest) returns (DigestFinalResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DigestFinal"
-		  body: "*"
-	    };
-	}
+	rpc DigestFinal(DigestFinalRequest) returns (DigestFinalResponse) {}
 
 	// CK_RV m_DigestSingle (
-	//     CK_MECHANISM_PTR mech, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
-	//     CK_BYTE_PTR digest, CK_ULONG_PTR digestlen, 
+	//     CK_MECHANISM_PTR mech,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
+	//     CK_BYTE_PTR digest, CK_ULONG_PTR digestlen,
 	//     target_t target) ;
-	rpc DigestSingle(DigestSingleRequest) returns (DigestSingleResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DigestSingle"
-		  body: "*"
-	    };
-	}
+	rpc DigestSingle(DigestSingleRequest) returns (DigestSingleResponse) {}
 
 	// CK_RV m_EncryptInit (
-	//     unsigned char *state, size_t *statelen, 
-	//     CK_MECHANISM_PTR mech, 
-	//     const unsigned char *key, size_t keylen, 
+	//     unsigned char *state, size_t *statelen,
+	//     CK_MECHANISM_PTR mech,
+	//     const unsigned char *key, size_t keylen,
 	//     target_t target) ;
-	rpc EncryptInit(EncryptInitRequest) returns (EncryptInitResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/EncryptInit"
-		  body: "*"
-	    };
-	}
+	rpc EncryptInit(EncryptInitRequest) returns (EncryptInitResponse) {}
 
 	// CK_RV m_DecryptInit (
-	//     unsigned char *state, size_t *statelen, 
-	//     CK_MECHANISM_PTR mech, 
-	//     const unsigned char *key, size_t keylen, 
+	//     unsigned char *state, size_t *statelen,
+	//     CK_MECHANISM_PTR mech,
+	//     const unsigned char *key, size_t keylen,
 	//     target_t target) ;
-	rpc DecryptInit(DecryptInitRequest) returns (DecryptInitResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DecryptInit"
-		  body: "*"
-	    };
-	}
+	rpc DecryptInit(DecryptInitRequest) returns (DecryptInitResponse) {}
 
 	// CK_RV m_EncryptUpdate (
-	//     unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR plain, CK_ULONG plainlen, 
-	//     CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen, 
+	//     unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR plain, CK_ULONG plainlen,
+	//     CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen,
 	//     target_t target) ;
-	rpc EncryptUpdate(EncryptUpdateRequest) returns (EncryptUpdateResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/EncryptUpdate"
-		  body: "*"
-	    };
-	}
+	rpc EncryptUpdate(EncryptUpdateRequest) returns (EncryptUpdateResponse) {}
 
 	// CK_RV m_DecryptUpdate (
-	//     unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR ciphered, CK_ULONG cipheredlen, 
-	//     CK_BYTE_PTR plain, CK_ULONG_PTR plainlen, 
+	//     unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR ciphered, CK_ULONG cipheredlen,
+	//     CK_BYTE_PTR plain, CK_ULONG_PTR plainlen,
 	//     target_t target) ;
-	rpc DecryptUpdate(DecryptUpdateRequest) returns (DecryptUpdateResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DecryptUpdate"
-		  body: "*"
-	    };
-	}
+	rpc DecryptUpdate(DecryptUpdateRequest) returns (DecryptUpdateResponse) {}
 
 	// CK_RV m_Encrypt (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR plain, CK_ULONG plainlen, 
-	//     CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR plain, CK_ULONG plainlen,
+	//     CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen,
 	//     target_t target) ;
-	rpc Encrypt(EncryptRequest) returns (EncryptResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/Encrypt"
-		  body: "*"
-	    };
-	}
+	rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 
 	// CK_RV m_Decrypt (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR ciphered, CK_ULONG cipheredlen, 
-	//     CK_BYTE_PTR plain, CK_ULONG_PTR plainlen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR ciphered, CK_ULONG cipheredlen,
+	//     CK_BYTE_PTR plain, CK_ULONG_PTR plainlen,
 	//     target_t target) ;
-	rpc Decrypt(DecryptRequest) returns (DecryptResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/Decrypt"
-		  body: "*"
-	    };
-	}
+	rpc Decrypt(DecryptRequest) returns (DecryptResponse) {}
 
 	// CK_RV m_EncryptFinal (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen,
 	//     target_t target) ;
-	rpc EncryptFinal(EncryptFinalRequest) returns (EncryptFinalResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/EncryptFinal"
-		  body: "*"
-	    };
-	}
+	rpc EncryptFinal(EncryptFinalRequest) returns (EncryptFinalResponse) {}
 
 	// CK_RV m_DecryptFinal (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR plain, CK_ULONG_PTR plainlen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR plain, CK_ULONG_PTR plainlen,
 	//     target_t target) ;
-	rpc DecryptFinal(DecryptFinalRequest) returns (DecryptFinalResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DecryptFinal"
-		  body: "*"
-	    };
-	}
+	rpc DecryptFinal(DecryptFinalRequest) returns (DecryptFinalResponse) {}
 
 	// CK_RV m_EncryptSingle (
-	//     const unsigned char *key, size_t keylen, 
-	//     CK_MECHANISM_PTR mech, 
-	//     CK_BYTE_PTR plain, CK_ULONG plainlen, 
-	//     CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen, 
+	//     const unsigned char *key, size_t keylen,
+	//     CK_MECHANISM_PTR mech,
+	//     CK_BYTE_PTR plain, CK_ULONG plainlen,
+	//     CK_BYTE_PTR ciphered, CK_ULONG_PTR cipheredlen,
 	//     target_t target) ;
-	rpc EncryptSingle(EncryptSingleRequest) returns (EncryptSingleResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/EncryptSingle"
-		  body: "*"
-	    };
-	}
+	rpc EncryptSingle(EncryptSingleRequest) returns (EncryptSingleResponse) {}
 
 	// CK_RV m_DecryptSingle (
-	//     const unsigned char *key, size_t keylen, 
-	//     CK_MECHANISM_PTR mech, 
-	//     CK_BYTE_PTR ciphered, CK_ULONG cipheredlen, 
-	//     CK_BYTE_PTR plain, CK_ULONG_PTR plainlen, 
+	//     const unsigned char *key, size_t keylen,
+	//     CK_MECHANISM_PTR mech,
+	//     CK_BYTE_PTR ciphered, CK_ULONG cipheredlen,
+	//     CK_BYTE_PTR plain, CK_ULONG_PTR plainlen,
 	//     target_t target) ;
-	rpc DecryptSingle(DecryptSingleRequest) returns (DecryptSingleResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DecryptSingle"
-		  body: "*"
-	    };
-	}
+	rpc DecryptSingle(DecryptSingleRequest) returns (DecryptSingleResponse) {}
 
 	// CK_RV m_SignInit (
-	//     unsigned char *state, size_t *statelen, 
-	//     CK_MECHANISM_PTR mech, 
-	//     const unsigned char *privKey, size_t privKeylen, 
+	//     unsigned char *state, size_t *statelen,
+	//     CK_MECHANISM_PTR mech,
+	//     const unsigned char *privKey, size_t privKeylen,
 	//     target_t target) ;
-	rpc SignInit(SignInitRequest) returns (SignInitResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/SignInit"
-		  body: "*"
-	    };
-	}
+	rpc SignInit(SignInitRequest) returns (SignInitResponse) {}
 
 	// CK_RV m_VerifyInit (
-	//     unsigned char *state, size_t *statelen, 
-	//     CK_MECHANISM_PTR mech, 
-	//     const unsigned char *pubKey, size_t pubKeylen, 
+	//     unsigned char *state, size_t *statelen,
+	//     CK_MECHANISM_PTR mech,
+	//     const unsigned char *pubKey, size_t pubKeylen,
 	//     target_t target) ;
-	rpc VerifyInit(VerifyInitRequest) returns (VerifyInitResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/VerifyInit"
-		  body: "*"
-	    };
-	}
+	rpc VerifyInit(VerifyInitRequest) returns (VerifyInitResponse) {}
 
 	// CK_RV m_SignUpdate (
-	//     unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
+	//     unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
 	//     target_t target) ;
-	rpc SignUpdate(SignUpdateRequest) returns (SignUpdateResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/SignUpdate"
-		  body: "*"
-	    };
-	}
+	rpc SignUpdate(SignUpdateRequest) returns (SignUpdateResponse) {}
 
 	// CK_RV m_VerifyUpdate (
-	//     unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
+	//     unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
 	//     target_t target) ;
-	rpc VerifyUpdate(VerifyUpdateRequest) returns (VerifyUpdateResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/VerifyUpdate"
-		  body: "*"
-	    };
-	}
+	rpc VerifyUpdate(VerifyUpdateRequest) returns (VerifyUpdateResponse) {}
 
 	// CK_RV m_SignFinal (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen,
 	//     target_t target) ;
-	rpc SignFinal(SignFinalRequest) returns (SignFinalResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/SignFinal"
-		  body: "*"
-	    };
-	}
+	rpc SignFinal(SignFinalRequest) returns (SignFinalResponse) {}
 
 	// CK_RV m_VerifyFinal (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR signature, CK_ULONG signaturelen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR signature, CK_ULONG signaturelen,
 	//     target_t target) ;
-	rpc VerifyFinal(VerifyFinalRequest) returns (VerifyFinalResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/VerifyFinal"
-		  body: "*"
-	    };
-	}
+	rpc VerifyFinal(VerifyFinalRequest) returns (VerifyFinalResponse) {}
 
 	// CK_RV m_Sign (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
-	//     CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
+	//     CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen,
 	//     target_t target) ;
-	rpc Sign(SignRequest) returns (SignResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/Sign"
-		  body: "*"
-	    };
-	}
+	rpc Sign(SignRequest) returns (SignResponse) {}
 
 	// CK_RV m_Verify (
-	//     const unsigned char *state, size_t statelen, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
-	//     CK_BYTE_PTR signature, CK_ULONG signaturelen, 
+	//     const unsigned char *state, size_t statelen,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
+	//     CK_BYTE_PTR signature, CK_ULONG signaturelen,
 	//     target_t target) ;
-	rpc Verify(VerifyRequest) returns (VerifyResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/Verify"
-		  body: "*"
-	    };
-	}
+	rpc Verify(VerifyRequest) returns (VerifyResponse) {}
 
 	// CK_RV m_SignSingle (
-	//     const unsigned char *privKey, size_t privKeylen, 
-	//     CK_MECHANISM_PTR mech, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
-	//     CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen, 
+	//     const unsigned char *privKey, size_t privKeylen,
+	//     CK_MECHANISM_PTR mech,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
+	//     CK_BYTE_PTR signature, CK_ULONG_PTR signaturelen,
 	//     target_t target) ;
-	rpc SignSingle(SignSingleRequest) returns (SignSingleResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/SignSingle"
-		  body: "*"
-	    };
-	}
+	rpc SignSingle(SignSingleRequest) returns (SignSingleResponse) {}
 
 	// CK_RV m_VerifySingle (
-	//     const unsigned char *pubKey, size_t pubKeylen, 
-	//     CK_MECHANISM_PTR mech, 
-	//     CK_BYTE_PTR data, CK_ULONG datalen, 
-	//     CK_BYTE_PTR signature, CK_ULONG signaturelen, 
+	//     const unsigned char *pubKey, size_t pubKeylen,
+	//     CK_MECHANISM_PTR mech,
+	//     CK_BYTE_PTR data, CK_ULONG datalen,
+	//     CK_BYTE_PTR signature, CK_ULONG signaturelen,
 	//     target_t target) ;
-	rpc VerifySingle(VerifySingleRequest) returns (VerifySingleResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/VerifySingle"
-		  body: "*"
-	    };
-	}
+	rpc VerifySingle(VerifySingleRequest) returns (VerifySingleResponse) {}
 
 	// CK_RV m_GenerateKey (
-	//     CK_MECHANISM_PTR mech, 
-	//     CK_ATTRIBUTE_PTR template, CK_ULONG templatelen, 
-	//     const unsigned char *pin, size_t pinlen, 
-	//     unsigned char *key, size_t *keylen, 
-	//     unsigned char *checkSum, size_t *checkSumlen, 
+	//     CK_MECHANISM_PTR mech,
+	//     CK_ATTRIBUTE_PTR template, CK_ULONG templatelen,
+	//     const unsigned char *pin, size_t pinlen,
+	//     unsigned char *key, size_t *keylen,
+	//     unsigned char *checkSum, size_t *checkSumlen,
 	//     target_t target) ;
-	rpc GenerateKey(GenerateKeyRequest) returns (GenerateKeyResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/GenerateKey"
-		  body: "*"
-	    };
-	}
+	rpc GenerateKey(GenerateKeyRequest) returns (GenerateKeyResponse) {}
 
 	// CK_RV m_GenerateKeyPair (
-	//     CK_MECHANISM_PTR mech, 
-	//     CK_ATTRIBUTE_PTR pubKeyTemplate, CK_ULONG pubKeyTemplatelen, 
-	//     CK_ATTRIBUTE_PTR privKeyTemplate, CK_ULONG privKeyTemplatelen, 
-	//     const unsigned char *pin, size_t pinlen, 
-	//     unsigned char *privKey, size_t *privKeylen, 
-	//     unsigned char *pubKey, size_t *pubKeylen, 
+	//     CK_MECHANISM_PTR mech,
+	//     CK_ATTRIBUTE_PTR pubKeyTemplate, CK_ULONG pubKeyTemplatelen,
+	//     CK_ATTRIBUTE_PTR privKeyTemplate, CK_ULONG privKeyTemplatelen,
+	//     const unsigned char *pin, size_t pinlen,
+	//     unsigned char *privKey, size_t *privKeylen,
+	//     unsigned char *pubKey, size_t *pubKeylen,
 	//     target_t target) ;
-	rpc GenerateKeyPair(GenerateKeyPairRequest) returns (GenerateKeyPairResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/GenerateKeyPair"
-		  body: "*"
-	    };
-	}
+	rpc GenerateKeyPair(GenerateKeyPairRequest) returns (GenerateKeyPairResponse) {}
 
 	// CK_RV m_WrapKey (
-	//     const unsigned char *key, size_t keylen, 
-	//     const unsigned char *keK, size_t keKlen, 
-	//     const unsigned char *macKey, size_t macKeylen, 
-	//     const CK_MECHANISM_PTR mech, 
-	//     CK_BYTE_PTR wrapped, CK_ULONG_PTR wrappedlen, 
+	//     const unsigned char *key, size_t keylen,
+	//     const unsigned char *keK, size_t keKlen,
+	//     const unsigned char *macKey, size_t macKeylen,
+	//     const CK_MECHANISM_PTR mech,
+	//     CK_BYTE_PTR wrapped, CK_ULONG_PTR wrappedlen,
 	//     target_t target) ;
-	rpc WrapKey(WrapKeyRequest) returns (WrapKeyResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/WrapKey"
-		  body: "*"
-	    };
-	}
+	rpc WrapKey(WrapKeyRequest) returns (WrapKeyResponse) {}
 
 	// CK_RV m_UnwrapKey (
-	//     const CK_BYTE_PTR wrapped, CK_ULONG wrappedlen, 
-	//     const unsigned char *keK, size_t keKlen, 
-	//     const unsigned char *macKey, size_t macKeylen, 
-	//     const unsigned char *pin, size_t pinlen, 
-	//     const CK_MECHANISM_PTR mech, 
-	//     const CK_ATTRIBUTE_PTR template, CK_ULONG templatelen, 
-	//     unsigned char *unwrapped, size_t *unwrappedlen, 
-	//     CK_BYTE_PTR checkSum, CK_ULONG *checkSumlen, 
+	//     const CK_BYTE_PTR wrapped, CK_ULONG wrappedlen,
+	//     const unsigned char *keK, size_t keKlen,
+	//     const unsigned char *macKey, size_t macKeylen,
+	//     const unsigned char *pin, size_t pinlen,
+	//     const CK_MECHANISM_PTR mech,
+	//     const CK_ATTRIBUTE_PTR template, CK_ULONG templatelen,
+	//     unsigned char *unwrapped, size_t *unwrappedlen,
+	//     CK_BYTE_PTR checkSum, CK_ULONG *checkSumlen,
 	//     target_t target) ;
-	rpc UnwrapKey(UnwrapKeyRequest) returns (UnwrapKeyResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/UnwrapKey"
-		  body: "*"
-	    };
-	}
+	rpc UnwrapKey(UnwrapKeyRequest) returns (UnwrapKeyResponse) {}
 
 	// CK_RV m_DeriveKey (
-	//     CK_MECHANISM_PTR mech, 
-	//     CK_ATTRIBUTE_PTR template, CK_ULONG templatelen, 
-	//     const unsigned char *baseKey, size_t baseKeylen, 
-	//     const unsigned char *data, size_t datalen, 
-	//     const unsigned char *pin, size_t pinlen, 
-	//     unsigned char *newKey, size_t *newKeylen, 
-	//     unsigned char *checkSum, size_t *checkSumlen, 
+	//     CK_MECHANISM_PTR mech,
+	//     CK_ATTRIBUTE_PTR template, CK_ULONG templatelen,
+	//     const unsigned char *baseKey, size_t baseKeylen,
+	//     const unsigned char *data, size_t datalen,
+	//     const unsigned char *pin, size_t pinlen,
+	//     unsigned char *newKey, size_t *newKeylen,
+	//     unsigned char *checkSum, size_t *checkSumlen,
 	//     target_t target) ;
-	rpc DeriveKey(DeriveKeyRequest) returns (DeriveKeyResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/DeriveKey"
-		  body: "*"
-	    };
-	}
+	rpc DeriveKey(DeriveKeyRequest) returns (DeriveKeyResponse) {}
 
 	// CK_RV m_GetMechanismList (
-	//     CK_SLOT_ID slot, 
-	//     CK_MECHANISM_TYPE_PTR mechs, CK_ULONG_PTR mechslen, 
+	//     CK_SLOT_ID slot,
+	//     CK_MECHANISM_TYPE_PTR mechs, CK_ULONG_PTR mechslen,
 	//     target_t target) ;
-	rpc GetMechanismList(GetMechanismListRequest) returns (GetMechanismListResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/GetMechanismList"
-		  body: "*"
-	    };
-	}
+	rpc GetMechanismList(GetMechanismListRequest) returns (GetMechanismListResponse) {}
 
 	// CK_RV m_GetMechanismInfo (
-	//     CK_SLOT_ID slot, 
-	//     CK_MECHANISM_TYPE mech, 
-	//     CK_MECHANISM_INFO_PTR mechInfo, 
+	//     CK_SLOT_ID slot,
+	//     CK_MECHANISM_TYPE mech,
+	//     CK_MECHANISM_INFO_PTR mechInfo,
 	//     target_t target) ;
-	rpc GetMechanismInfo(GetMechanismInfoRequest) returns (GetMechanismInfoResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/GetMechanismInfo"
-		  body: "*"
-	    };
-	}
+	rpc GetMechanismInfo(GetMechanismInfoRequest) returns (GetMechanismInfoResponse) {}
 
 	// CK_RV m_GetAttributeValue (
-	//     const unsigned char *object, size_t objectlen, 
-	//     CK_ATTRIBUTE_PTR attributes, CK_ULONG attributeslen, 
+	//     const unsigned char *object, size_t objectlen,
+	//     CK_ATTRIBUTE_PTR attributes, CK_ULONG attributeslen,
 	//     target_t target) ;
-	rpc GetAttributeValue(GetAttributeValueRequest) returns (GetAttributeValueResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/GetAttributeValue"
-		  body: "*"
-	    };
-	}
+	rpc GetAttributeValue(GetAttributeValueRequest) returns (GetAttributeValueResponse) {}
 
 	// CK_RV m_SetAttributeValue (
-	//     unsigned char *object, size_t objectlen, 
-	//     CK_ATTRIBUTE_PTR attributes, CK_ULONG attributeslen, 
+	//     unsigned char *object, size_t objectlen,
+	//     CK_ATTRIBUTE_PTR attributes, CK_ULONG attributeslen,
 	//     target_t target) ;
-	rpc SetAttributeValue(SetAttributeValueRequest) returns (SetAttributeValueResponse) {
-	    option (google.api.http) = {
-		  post: "/v1/crypto/SetAttributeValue"
-		  body: "*"
-	    };
-	}
+	rpc SetAttributeValue(SetAttributeValueRequest) returns (SetAttributeValueResponse) {}
 
 }
 
