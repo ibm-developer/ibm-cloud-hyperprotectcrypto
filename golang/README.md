@@ -1,16 +1,33 @@
 # Overview
 
-1. [Install Golang](https://golang.org/doc/install)
-2. [Change GREP11 server address](examples/server_test.go#L18) in `examples/server_test.go` file
-3. cd `$GOPATH/src/github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/examples`
-4. Execute the example by issuing the command `go test -v`
-5. You will see similiar output as the following from the sample program:
+1. [Install Golang](https://golang.org/doc/install) and ensure that your cloned repository is in your GOPATH.
+2. Update the following information in the [examples/server_test.go](examples/server_test.go#L20) file.  
+
+	*NOTE: This information can obtained by logging in to your IBM Cloud account and viewing your Hyper Protect Crypto Serverices (HPCS) instance and IAM information. See the [GREP11 API documentation](https://test.cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-grep11-api-ref) for more information about GREP11*.
+
+	```Golang
+	// The following IBM Cloud items need to be changed prior to running the sample program
+	const address = "<grep11_server_address>:<port>"
+
+	var callOpts = []grpc.DialOption{
+		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
+		grpc.WithPerRPCCredentials(&util.IAMPerRPCCredentials{
+			APIKey:   "<ibm_cloud_apikey>",
+			Endpoint: "<https://<iam_ibm_cloud_endpoint>",
+			Instance: "<hpcs_instance_id>",
+		}),
+	}
+	```
+		
+3. `cd $GOPATH/src/github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/examples`
+4. Execute the examples by issuing the command: `go test -v`
+5. The sample program produces output similar to the following:
 
     ```Bash
-	=== RUN   Example_getMechnismInfo
-	--- PASS: Example_getMechnismInfo (0.02s)
-	=== RUN   Example_encryptAndecrypt
-	--- PASS: Example_encryptAndecrypt (0.03s)
+	=== RUN   Example_getMechanismInfo
+	--- PASS: Example_getMechanismInfo (0.02s)
+	=== RUN   Example_encryptAndDecrypt
+	--- PASS: Example_encryptAndDecrypt (0.03s)
 	=== RUN   Example_digest
 	--- PASS: Example_digest (0.02s)
 	=== RUN   Example_signAndVerifyUsingRSAKeyPair
@@ -29,17 +46,24 @@
 	ok  	github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/examples	1.667s
     ```
 
-## General function call workflow
+## General Function Call Workflow
 
-Grep11 can do encrypt, decrypt, digest, sign and verify operations. For each operation, there are a series of functions. For example, It has `EncryptInit()`, `Encrypt()`, `EncryptUpdate()`, `EncryptFinal()` and `EncryptSingle()`. In general `XXXInit()` is used to initialize a operation; `XXXUpdate()` and `XXXFinal()` are used to perform mutiple function calls against long pieace of message; `XXXSingle()` is IBM ep11 extention to the standard PKCS#11 specification and used to perform a single call without `XXXInit()` call. The following graph script shows the three ways to calling sequence. The `XXX` could be `Encrypt`, `Decrypt`, `Digest`, `Sign` and `Verify`.
-![function work flow](func_workflow.png)
+GREP11 can perform encrypt, decrypt, digest, sign and verify operations. For each operation, there are a series of sub-operations or functions.  
 
+For example, the *Encrypt* operation consists of *EncryptInit()*, *Encrypt()*, *EncryptUpdate()*, *EncryptFinal()* and *EncryptSingle()* sub-operations.
 
-## Things to consider
+#### GREP11 sub-operations for Encrypt:
 
-This example does not use TLS. If you would like to experiment with TLS, review https://grpc.io/docs/guides/auth.html on how to implement TLS with GRPC.
+- *Encrypt***Init()** is used to initialize an operation
 
-## TODO
+- *Encrypt()* is used to encrypt data without the need to perform *EncryptUpdate()* or *EncryptFinal()* sub-operations. *EncryptInit()* must be run prior to the *Encrypt()* call
 
-- The mock server needs to be implemented
-- Implement language bindings for other languages
+- *Encrypt***Update()** is used to perform update operations as part of a multi-part operation
+
+- *Encrypt***Final()** is used to perform final operations as part of a multi-part operation
+
+- *Encrypt***Single()** is an IBM EP11 extension to the standard PKCS#11 specification and used to perform a single call without the need to use the **Init**, **Update**, and **Final** sub-operations
+
+The following diagram shows the three calling sequence flows that can be used for *Encrypt*, *Decrypt*, *Digest*, *Sign* and *Verify* operations:
+
+![function work flow](func_workflow.svg)

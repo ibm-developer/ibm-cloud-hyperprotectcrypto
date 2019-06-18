@@ -24,35 +24,6 @@
 #   go-tests = true
 #   unused-packages = true
 
-
-[[constraint]]
-  name = "github.com/gogo/googleapis"
-  version = "1.1.0"
-
-[[constraint]]
-  name = "github.com/gogo/protobuf"
-  version = "1.2.0"
-
-[[constraint]]
-  name = "github.com/golang/mock"
-  version = "1.2.0"
-
-[[constraint]]
-  name = "github.com/golang/protobuf"
-  version = "1.2.0"
-
-[[constraint]]
-  name = "github.com/satori/go.uuid"
-  version = "1.2.0"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/net"
-
-[[constraint]]
-  name = "google.golang.org/grpc"
-  version = "1.17.0"
-
 [prune]
   go-tests = true
   unused-packages = true

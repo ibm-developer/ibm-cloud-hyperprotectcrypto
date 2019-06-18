@@ -8,15 +8,20 @@ package util
 
 import (
 	"bytes"
+	"context"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"encoding/asn1"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/ep11"
@@ -29,10 +34,6 @@ var (
 )
 
 func init() {
-	//FIXME: there is a discrepancy here between gogo.proto.RegisterType and standard golang proto
-	//this is for now sufficient to get Grep11Error and grpc/status working, but need to reconcile
-	//hint one: us github.com/gogo/status
-	//hint two: stop using gogo generation, if casting can be fixed
 	proto.RegisterType((*pb.Grep11Error)(nil), "grep11.Grep11Error")
 }
 
@@ -45,8 +46,7 @@ func DumpAttributes(attrs map[ep11.Attribute][]byte) string {
 	return buffer.String()
 }
 
-// NewAttribute is a convenience function to golang code to make conversions
-// to []C.CK_ATTRIBUTE more convenient
+// NewAttribute is a convenience function to make conversions to []C.CK_ATTRIBUTE more convenient
 func NewAttribute(aType ep11.Attribute, val interface{}) *ep11.AttributeStruct {
 	return &ep11.AttributeStruct{
 		Type:  aType,
@@ -54,9 +54,7 @@ func NewAttribute(aType ep11.Attribute, val interface{}) *ep11.AttributeStruct {
 	}
 }
 
-// NewAttribute is a convenience function to golang code to make conversions
-// to []C.CK_ATTRIBUTE more convenient
-// This should really live in test_helpers
+// NewAttributeMap creates a map of ep11 attributes
 func NewAttributeMap(attrs ...*ep11.AttributeStruct) map[ep11.Attribute][]byte {
 	rc := make(map[ep11.Attribute][]byte)
 	for _, val := range attrs {
@@ -66,6 +64,7 @@ func NewAttributeMap(attrs ...*ep11.AttributeStruct) map[ep11.Attribute][]byte {
 	return rc
 }
 
+// NewAttributeValue converts a Golang-based attribute type to a C-based attribute type
 func NewAttributeValue(val interface{}) []byte {
 	if val == nil {
 		return nil
@@ -74,37 +73,24 @@ func NewAttributeValue(val interface{}) []byte {
 	case bool:
 		if v {
 			return []byte{1}
-		} else {
-			return []byte{0}
 		}
+		return []byte{0}
 	case string:
 		return []byte(v)
 	case []byte:
 		return v
-		//	case KeyType:
-		//		return []byte{byte(v)}
-		//	case ObjectClass:
-		//		return []byte{byte(v)}
-		//	case uint:
-		//		ul := C.CK_ULONG(v)
-		//		return C.GoBytes(unsafe.Pointer(&ul), C.int(unsafe.Sizeof(ul)))
-		//	case KeyType:
-		//		castArr := *(*[4]byte)(unsafe.Pointer(&v))
-		//		return castArr[:]
-	//case time.Time: // for CKA_DATE
-	//	panic("PKCS11: Unimplemented, CKA_DATE not yet supported")
 	default:
 		buf := new(bytes.Buffer)
 		err := binary.Write(buf, binary.BigEndian, val)
-		//err := binary.Write(buf, binary.LittleEndian, val)
 		if err != nil {
-			//TODO: Need another way to handle errors when creating Attribute objects
 			panic("PKCS11: Unhandled attribute type " + err.Error())
 		}
 		return buf.Bytes()
 	}
 }
 
+// Convert returns a formatted GREP11 error message
+// The contents of the error message depend on the source of the error
 func Convert(err error) (bool, *pb.Grep11Error) {
 	if err == nil {
 		return true, nil
@@ -141,15 +127,16 @@ func Convert(err error) (bool, *pb.Grep11Error) {
 }
 
 var (
+	// The following variables are standardized elliptic curve definitions
 	OIDNamedCurveP224 = asn1.ObjectIdentifier{1, 3, 132, 0, 33}
-	OIDNamedCurveP256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7} //prime256v1
+	OIDNamedCurveP256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
 	OIDNamedCurveP384 = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
 	OIDNamedCurveP521 = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
 	oidECPublicKey    = asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
 	oidRSAPublicKey   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
 )
 
-//GetNamedCurveFromOID returns Curve from specified curve OID
+// GetNamedCurveFromOID returns an elliptic curve from the specified curve OID
 func GetNamedCurveFromOID(oid asn1.ObjectIdentifier) elliptic.Curve {
 	switch {
 	case oid.Equal(OIDNamedCurveP224):
@@ -164,40 +151,41 @@ func GetNamedCurveFromOID(oid asn1.ObjectIdentifier) elliptic.Curve {
 	return nil
 }
 
-//ecKeyIdentificationASN defines the ECDSA priviate/public key identifier for ep11
+// ecKeyIdentificationASN defines the ECDSA priviate/public key identifier for GREP11
 type ecKeyIdentificationASN struct {
 	KeyType asn1.ObjectIdentifier
 	Curve   asn1.ObjectIdentifier
 }
 
-//ecPubKeyASN defines ECDSA public key ASN1 encoding structure for ep11
+// ecPubKeyASN defines the ECDSA public key ASN1 encoding structure for GREP11
 type ecPubKeyASN struct {
 	Ident ecKeyIdentificationASN
 	Point asn1.BitString
 }
 
+// generalKeyTypeASN is used to identify the public key ASN1 encoding structure for GREP11
 type pubKeyTypeASN struct {
 	KeyType asn1.ObjectIdentifier
 }
 
-//generalPubKeyASN used to identify the public key type
+// generalPubKeyASN is used to identify the public key type
 type generalPubKeyASN struct {
 	OIDAlgorithm pubKeyTypeASN
 }
 
-//GetPubKey convert ep11 SPKI structure to golang ecdsa.PublicKey
+// GetPubKey converts an ep11 SPKI structure to a golang ecdsa.PublicKey
 func GetPubKey(spki []byte) (crypto.PublicKey, asn1.ObjectIdentifier, error) {
 	firstDecode := &generalPubKeyASN{}
 	_, err := asn1.Unmarshal(spki, firstDecode)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed unmarshalling public key: %s", err)
+		return nil, nil, fmt.Errorf("Failed unmarshaling public key: %s", err)
 	}
 
 	if firstDecode.OIDAlgorithm.KeyType.Equal(oidECPublicKey) {
 		decode := &ecPubKeyASN{}
 		_, err := asn1.Unmarshal(spki, decode)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Failed unmarshalling public key: %s", err)
+			return nil, nil, fmt.Errorf("Failed unmarshaling public key: %s", err)
 		}
 		curve := GetNamedCurveFromOID(decode.Ident.Curve)
 		if curve == nil {
@@ -216,12 +204,91 @@ func GetPubKey(spki []byte) (crypto.PublicKey, asn1.ObjectIdentifier, error) {
 	}
 }
 
-//GetPubkeyBytesFromSPKI extracts coordinates bit array from public key in SPKI format
+// GetPubkeyBytesFromSPKI extracts a coordinate bit array from the public key in SPKI format
 func GetPubkeyBytesFromSPKI(spki []byte) ([]byte, error) {
 	decode := &ecPubKeyASN{}
 	_, err := asn1.Unmarshal(spki, decode)
 	if err != nil {
-		return nil, fmt.Errorf("failed unmarshalling public key: [%s]", err)
+		return nil, fmt.Errorf("failed unmarshaling public key: [%s]", err)
 	}
 	return decode.Point.Bytes, nil
+}
+
+// IAMPerRPCCredentials type defines the fields required for IBM Cloud IAM authentication
+// This type implements the GRPC PerRPCCredentials interface
+type IAMPerRPCCredentials struct {
+	expiration  time.Time
+	updateLock  sync.Mutex
+	Instance    string // Always Required - IBM Cloud HPCS instance ID
+	AccessToken string // Required if APIKey nor Endpoint are specified - IBM Cloud IAM access token
+	APIKey      string // Required if AccessToken is not specified - IBM Cloud API key
+	Endpoint    string // Required if AccessToken is not specified - IBM Cloud IAM endpoint
+}
+
+// GetRequestMetadata is used by GRPC for authentication
+func (cr *IAMPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	// Set token if empty or Set token if expired
+	if len(cr.APIKey) != 0 && len(cr.Endpoint) != 0 && time.Now().After(cr.expiration) {
+		if err := cr.getToken(ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	return map[string]string{
+		"authorization":    cr.AccessToken,
+		"bluemix-instance": cr.Instance,
+	}, nil
+}
+
+// RequireTransportSecurity is used by GRPC for authentication
+func (cr *IAMPerRPCCredentials) RequireTransportSecurity() bool {
+	return true
+}
+
+// getToken obtains a bearer token and its expiration
+func (cr *IAMPerRPCCredentials) getToken(ctx context.Context) (err error) {
+	cr.updateLock.Lock()
+	defer cr.updateLock.Unlock()
+
+	// Check if another thread has updated the token
+	if time.Now().Before(cr.expiration) {
+		return nil
+	}
+
+	var req *http.Request
+	client := http.Client{}
+	requestBody := []byte("grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=" + cr.APIKey)
+
+	req, err = http.NewRequest("POST", cr.Endpoint+"/identity/token", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(ctx)
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %s", err)
+	}
+	defer resp.Body.Close()
+
+	iamToken := struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int32  `json:"expires_in"`
+	}{}
+
+	err = json.Unmarshal(respBody, &iamToken)
+	if err != nil {
+		return fmt.Errorf("error unmarshaling response body: %s", err)
+	}
+
+	cr.AccessToken = fmt.Sprintf("Bearer %s", iamToken.AccessToken)
+	cr.expiration = time.Now().Add((time.Duration(iamToken.ExpiresIn - 60)) * time.Second)
+
+	return nil
 }
