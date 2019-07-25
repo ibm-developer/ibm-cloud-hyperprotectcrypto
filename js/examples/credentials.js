@@ -1,5 +1,6 @@
 const grpc = require('grpc'),
-      request = require('request');
+      request = require('request'),
+      {util} = require('../');
 
 class Credentials {
   constructor(options={}) {
@@ -29,8 +30,8 @@ class Credentials {
 
       let metadata = new grpc.Metadata();
 
-      metadata.add('authorization', `Bearer ${data}`);
-      metadata.add('bluemix-instance', this.options.instance);
+      // Populate metadata object with headers required for authorization
+      util.authMetadata(metadata, this.options.instance, data);
 
       return callback(null, metadata);
     });

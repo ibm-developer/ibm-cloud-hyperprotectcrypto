@@ -1,8 +1,11 @@
-const asn1 = require('asn1.js');
+const asn1 = require('asn1.js'),
+      Long = require('long'),
+      {ConstantType} = require('./header_consts'),
+      util = require('util');
 
 const Asn1OID = asn1.define('Asn1OID', function () { this.objid(); });
 
-const Asn1PublicKey = asn1.define('PubKeyASN', function () {
+const Asn1ECPublicKey = asn1.define('Asn1ECPublicKey', function () {
   this.seq().obj(
     this.key('key').seq().obj(
       this.key('type').objid(),
@@ -39,6 +42,10 @@ exports.AttributeMap = AttributeMap;
 
 class Attribute {
   constructor(key, value) {
+    if (!(key instanceof ConstantType)) {
+      throw new Error('Attribute key must be instance of ConstantType');
+    }
+
     this.key = key;
     this.value = convertValue(value);
   }
@@ -48,6 +55,10 @@ exports.Attribute = Attribute;
 
 
 function convertValue(value) {
+  if (Long.isLong(value)) {
+    return Buffer.from(value.toBytesBE());
+  }
+
   switch (typeof value) {
     case 'boolean':
       return Buffer.from([value == true && 1 || 0]);
@@ -56,9 +67,7 @@ function convertValue(value) {
       return Buffer.from(value);
 
     case 'number':
-      let buf = Buffer.alloc(8);
-      buf.writeUInt32BE(value, 4);
-      return buf;
+      return Buffer.from(Long.fromInt(value).toBytesBE());
 
     default:
       return value
@@ -66,5 +75,12 @@ function convertValue(value) {
 }
 
 exports.getPubKeyBytesFromSPKI = function (spki) {
-  return (Asn1PublicKey.decode(spki).point || {}).data;
+  return (Asn1ECPublicKey.decode(spki).point || {}).data;
+};
+
+exports.authMetadata = function (metadata, instance, token) {
+  metadata.add('authorization', `Bearer ${token}`);
+  metadata.add('bluemix-instance', instance);
+
+  return metadata;
 };

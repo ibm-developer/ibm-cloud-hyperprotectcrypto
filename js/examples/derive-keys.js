@@ -1,15 +1,7 @@
 const async = require('async'),
+      client = require('./client'),
       ep11 = require('../'),
       {pb, util} = ep11;
-
-const creds = new ep11.Credentials({
-  apiKey: 'API KEY',
-  iamUrl: 'https://iam.test.cloud.ibm.com',
-  instance: 'INSTANCE ID',
-  ssl: true
-});
-
-const client = new pb.Crypto('GREP11 URL:PORT', creds);
 
 const message = 'Hello World!';
 

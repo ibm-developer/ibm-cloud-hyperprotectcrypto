@@ -4,3 +4,5 @@
 
 # Visual Studio IDE
 .vscode
+
+node_modules

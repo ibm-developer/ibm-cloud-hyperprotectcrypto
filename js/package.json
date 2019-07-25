@@ -8,12 +8,12 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "@grpc/proto-loader": "^0.5.1",
     "asn1.js": "^5.1.1",
-    "google-protobuf": "^3.7.1",
     "grpc": "^1.21.1",
+    "long": "^4.0.0",
     "request": "^2.88.0"
   },
   "devDependencies": {

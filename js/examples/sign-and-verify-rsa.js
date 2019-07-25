@@ -1,17 +1,9 @@
 const async = require('async'),
+      client = require('./client'),
       crypto = require('crypto'),
       ep11 = require('../'),
       {pb, util} = ep11,
       uuidv4 = require('uuid/v4');
-
-const creds = new ep11.Credentials({
-  apiKey: 'API KEY',
-  iamUrl: 'https://iam.test.cloud.ibm.com',
-  instance: 'INSTANCE ID',
-  ssl: true
-});
-
-const client = new pb.Crypto('GREP11 URL:PORT', creds);
 
 const dataToSign = crypto.createHash('sha256')
   .update('This data needs to be signed')
