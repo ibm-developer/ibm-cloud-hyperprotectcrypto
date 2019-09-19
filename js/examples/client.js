@@ -1,3 +1,9 @@
+/*
+Copyright IBM Corp. All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 const ep11 = require('../'),
       {Credentials} = require('./credentials'),
       {pb} = ep11;

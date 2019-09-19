@@ -1,3 +1,9 @@
+/*
+Copyright IBM Corp. All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 const asn1 = require('asn1.js'),
       Long = require('long'),
       {ConstantType} = require('./header_consts'),
