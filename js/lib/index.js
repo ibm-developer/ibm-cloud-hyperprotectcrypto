@@ -10,6 +10,7 @@ const pb = require('./pb'),
 Object.assign(module.exports, {},
   require('./header_consts.js'),
   {
+    grpc: require('grpc'),
     pb: pb.loadProto(path.join(__dirname, '..', '..', 'protos', 'server.proto')),
     util: require('./util')
   }
