@@ -4,11 +4,13 @@ This repository contains software to be used to connect to the **IBM Cloud Hyper
 
 # Contents
 
-The contents of this repository are offered *as-is* and is subject to change at anytime. This is an *Experimental Service* from IBM Cloud at this point in time.
+The contents of this repository are offered *as-is* and is subject to change at anytime.
 
-# Golang Examples
+For general information about "Enterprise PKCS #11 over gRPC" please see the official [documentation](https://cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-enterprise_PKCS11_overview#grep11_intro)
 
-The Golang examples can be found [here](golang/README.md). The examples show how to use the **HPCS offering** to accomplish the following functions:
+# Code Examples
+
+The Golang examples can be found [here](golang/README.md), while JavaScript examples can be found in the **js** folder. The examples show how to use the **HPCS offering** to accomplish the following functions:
 
 * Key generation
 * Encrypt and decrypt
@@ -17,3 +19,6 @@ The Golang examples can be found [here](golang/README.md). The examples show how
 * Derive keys
 * Build message digest
 * Retrieve mechanism information
+
+Examples for hyperledger-fabric (e.g. IBM Blockchain Platform) can be found in **js/fabric** folder
+
