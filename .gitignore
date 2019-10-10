@@ -1,0 +1,8 @@
+# IDEA IDE
+.idea
+.DS_Store
+
+# Visual Studio IDE
+.vscode
+
+node_modules

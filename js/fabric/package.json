@@ -1,0 +1,27 @@
+{
+  "name": "fabric-ep11",
+  "version": "1.0.0",
+  "description": "",
+  "main": "CryptoSuite_EP11.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibm-developer/ibm-cloud-hyperprotectcrypto.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/issues"
+  },
+  "homepage": "https://github.com/ibm-developer/ibm-cloud-hyperprotectcrypto#readme",
+  "dependencies": {
+    "async": "^3.1.0",
+    "bn.js": "^5.0.0",
+    "deasync": "^0.1.15",
+    "elliptic": "^6.5.1",
+    "ep11": "file:../",
+    "fabric-client": "^1.4.4"
+  }
+}
