@@ -14,10 +14,10 @@
 
 BASEDIR=$(dirname "$0")
 
-IAM_API_KEY=<your_API_KEY>
+IAM_API_KEY=<API_KEY>
 IAM_ENDPOINT=https://iam.cloud.ibm.com
-INSTANCE_ID=<your_HPCS_Instance_ID>
-EP11_ADDRESS=<your_ep11_address:port>
+INSTANCE_ID=<INSTANCE ID>
+EP11_ADDRESS=<GREP URL:PORT>
 
 echo "=== RUN   Example_getMechanismInfo"
 node $BASEDIR/examples/mechanism-info.js

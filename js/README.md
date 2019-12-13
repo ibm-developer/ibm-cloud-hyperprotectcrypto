@@ -24,7 +24,7 @@ let apiKey = 'API KEY',
 * `wrap-and-unwrap-key.js`: demonstrates the wrap and unwrap key operations
 * `derive-keys.js`: demonstrates the derive key operation
 
-Alternatively, you can choose to exercise all the operations at once by updating the following information in the script [start_test.sh](start_test.sh#L17):
+5. Alternatively, you can choose to exercise all the operations at once by updating the following information in the script [start_test.sh](start_test.sh#L17):
 
 ```
 IAM_API_KEY=<API_KEY>
