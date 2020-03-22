@@ -2,9 +2,9 @@
 
 1. Install the following two python packages: `asn1` and `grpcio-tools`
 
-   	```
-        $ pip3 install asn1 grpcio-tools
-        ```
+```
+$ pip3 install asn1 grpcio-tools
+```
 
 2. Update the following information in the [examples/server.py](examples/server.py#L14) file.  
 
@@ -24,36 +24,36 @@
 
 4. Execute the following command to generate python bindings to access a grep11 server.
 
-   	```Bash
-	$ python3 -m grpc_tools.protoc ../grpc/common/protos/*.proto \
-	     ../grpc/generated/protos/*.proto \
-	     ../grpc/vendor/github.com/gogo/protobuf/gogoproto/*.proto \
-             ../grpc/vendor/github.com/gogo/googleapis/google/api/*.proto \
-             -I../grpc/common/protos -I../grpc/generated/protos \
-             -I../grpc/vendor/github.com/gogo/protobuf/gogoproto \
-             -I../grpc/vendor/github.com/gogo/googleapis \
-             --python_out=. --grpc_python_out=.
-	```
+```
+$ python3 -m grpc_tools.protoc ../grpc/common/protos/*.proto \
+     ../grpc/generated/protos/*.proto \
+     ../grpc/vendor/github.com/gogo/protobuf/gogoproto/*.proto \
+     ../grpc/vendor/github.com/gogo/googleapis/google/api/*.proto \
+     -I../grpc/common/protos -I../grpc/generated/protos \
+     -I../grpc/vendor/github.com/gogo/protobuf/gogoproto \
+     -I../grpc/vendor/github.com/gogo/googleapis \
+     --python_out=. --grpc_python_out=.
+```
 
 5. Execute the examples by issuing the command: `python3 -m unittest -b -v`
 6. The sample program produces output similar to the following:
 
-        ```
-        $ python3 -m unittest -b -v
-        test_0_getMechanismInfo (test_server.ServerTestCase) ... ok
-        test_1_encryptAndDecrypt (test_server.ServerTestCase) ... ok
-        test_2_digest (test_server.ServerTestCase) ... ok
-        test_3_signAndVerifyUsingRSAKeyPair (test_server.ServerTestCase) ... ok
-        test_4_signAndVerifyUsingECDSAKeyPair (test_server.ServerTestCase) ... ok
-        test_5_signAndVerifyToTestErrorHandling (test_server.ServerTestCase) ... expected failure
-        test_6_wrapAndUnwrapKey (test_server.ServerTestCase) ... ok
-        test_7_deriveKey (test_server.ServerTestCase) ... ok
+```
+$ python3 -m unittest -b -v
+test_0_getMechanismInfo (test_server.ServerTestCase) ... ok
+test_1_encryptAndDecrypt (test_server.ServerTestCase) ... ok
+test_2_digest (test_server.ServerTestCase) ... ok
+test_3_signAndVerifyUsingRSAKeyPair (test_server.ServerTestCase) ... ok
+test_4_signAndVerifyUsingECDSAKeyPair (test_server.ServerTestCase) ... ok
+test_5_signAndVerifyToTestErrorHandling (test_server.ServerTestCase) ... expected failure
+test_6_wrapAndUnwrapKey (test_server.ServerTestCase) ... ok
+test_7_deriveKey (test_server.ServerTestCase) ... ok
 
-        ----------------------------------------------------------------------
-        Ran 8 tests in 14.944s
+----------------------------------------------------------------------
+Ran 8 tests in 14.944s
 
-        OK (expected failures=1)
-        ```
+OK (expected failures=1)
+```
 
 ## General Function Call Workflow
 
