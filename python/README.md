@@ -2,7 +2,7 @@
 
 1. Install the following two python packages: `asn1` and `grpcio-tools`
 
-   	```Bash
+   	```
         $ pip3 install asn1 grpcio-tools
         ```
 
@@ -38,7 +38,7 @@
 5. Execute the examples by issuing the command: `python3 -m unittest -b -v`
 6. The sample program produces output similar to the following:
 
-        ```Bash
+        ```
         $ python3 -m unittest -b -v
         test_0_getMechanismInfo (test_server.ServerTestCase) ... ok
         test_1_encryptAndDecrypt (test_server.ServerTestCase) ... ok
@@ -53,7 +53,7 @@
         Ran 8 tests in 14.944s
 
         OK (expected failures=1)
-         ```
+        ```
 
 ## General Function Call Workflow
 
