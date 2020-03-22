@@ -1,13 +1,12 @@
 # Overview
 
-1. Install Python3 if you don't have one already.
-2. Install python packages.
+1. Install the following two python packages: `asn1` and `grpcio-tools`
 
-```
-$ pip3 install asn1 grpcio-tools
-```
+   	```Bash
+        $ pip3 install asn1 grpcio-tools
+        ```
 
-3. Update the following information in the [examples/server_test.py](examples/server_test.py#L14) file.  
+2. Update the following information in the [examples/server.py](examples/server.py#L14) file.  
 
 	*NOTE: This information can obtained by logging in to your IBM Cloud account and viewing your Hyper Protect Crypto Serverices (HPCS) instance and IAM information. See the [GREP11 API documentation](https://cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-grep11-api-ref) for more information about GREP11*.
 
@@ -21,25 +20,26 @@ $ pip3 install asn1 grpcio-tools
 	    'Instance': "<hpcs_instance_id>"
 	}
 	```
-4. Go to `ibm-cloud-hyperprotectcrypto/python/examples`
+3. Go to `ibm-cloud-hyperprotectcrypto/python/examples`
 
-5. Execute the following command to generate python bindings to access a grep11 server.
+4. Execute the following command to generate python bindings to access a grep11 server.
 
-```
-$ python3 -m grpc_tools.protoc ../grpc/common/protos/*.proto \
-     ../grpc/generated/protos/*.proto \
-     ../grpc/vendor/github.com/gogo/protobuf/gogoproto/*.proto \
-     ../grpc/vendor/github.com/gogo/googleapis/google/api/*.proto \
-     -I../grpc/common/protos -I../grpc/generated/protos \
-     -I../grpc/vendor/github.com/gogo/protobuf/gogoproto \
-     -I../grpc/vendor/github.com/gogo/googleapis \
-     --python_out=. --grpc_python_out=.
-```
+   	```Bash
+	$ python3 -m grpc_tools.protoc ../grpc/common/protos/*.proto \
+	     ../grpc/generated/protos/*.proto \
+	     ../grpc/vendor/github.com/gogo/protobuf/gogoproto/*.proto \
+             ../grpc/vendor/github.com/gogo/googleapis/google/api/*.proto \
+             -I../grpc/common/protos -I../grpc/generated/protos \
+             -I../grpc/vendor/github.com/gogo/protobuf/gogoproto \
+             -I../grpc/vendor/github.com/gogo/googleapis \
+             --python_out=. --grpc_python_out=.
+	```
 
-6. Execute the examples by issuing the command: `python3 -m unittest -b -v`
-7. The sample program produces output similar to the following:
+5. Execute the examples by issuing the command: `python3 -m unittest -b -v`
+6. The sample program produces output similar to the following:
 
-    ```Bash
+        ```Bash
+        $ python3 -m unittest -b -v
         test_0_getMechanismInfo (test_server.ServerTestCase) ... ok
         test_1_encryptAndDecrypt (test_server.ServerTestCase) ... ok
         test_2_digest (test_server.ServerTestCase) ... ok
@@ -53,7 +53,7 @@ $ python3 -m grpc_tools.protoc ../grpc/common/protos/*.proto \
         Ran 8 tests in 14.944s
 
         OK (expected failures=1)
-    ```
+         ```
 
 ## General Function Call Workflow
 
