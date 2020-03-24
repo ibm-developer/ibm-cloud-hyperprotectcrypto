@@ -29,16 +29,10 @@ def Example_getMechanismInfo():
             mechanismListRequest = pb.GetMechanismListRequest()
             mechanismListResponse = cryptoClient.GetMechanismList(mechanismListRequest)
     
-            if not mechanismListResponse:
-                raise Exception("Get mechanism list error")
-
             print("Got mechanism list:\n{} ...\n".format(mechanismListResponse.Mechs[:1]))
 
             mechanismInfoRequest = pb.GetMechanismInfoRequest(Mech=ep11.CKM_RSA_PKCS)
             mechanismInfoResponse = cryptoClient.GetMechanismInfo(mechanismInfoRequest)
-
-            if not mechanismInfoResponse:
-                raise Exception("Get mechanism info error")
 
         except grpc.RpcError as rpc_error:
             print('grpc error details=' + str(rpc_error.details()))
@@ -79,8 +73,7 @@ def Example_encryptAndDecrypt():
             )
 
             generateKeyStatus = cryptoClient.GenerateKey(r)
-            if not generateKeyStatus:
-                raise Exception("GenerateKey Error")
+
             print("Generated AES Key")
 
             rngTemplate = pb.GenerateRandomRequest(
@@ -88,9 +81,9 @@ def Example_encryptAndDecrypt():
 	    )
         
             rng = cryptoClient.GenerateRandom(rngTemplate)
-            if not rng:
-                raise Exception("GenerateRandom Error")
+
             iv = rng.Rnd[:ep11.AES_BLOCK_SIZE]
+
             print("Generated IV")
 
             encipherInitInfo = pb.EncryptInitRequest(
@@ -98,8 +91,6 @@ def Example_encryptAndDecrypt():
 	        Key=generateKeyStatus.Key # you may want to store this
 	    )
             cipherStateInit = cryptoClient.EncryptInit(encipherInitInfo)
-            if not cipherStateInit:
-                raise Exception("Failed EncryptInit")
 
             plain = b'Hello, this is a very long and creative message without any imagination'
 
@@ -108,8 +99,6 @@ def Example_encryptAndDecrypt():
                 Plain=plain[:20]
             )
             encipherStateUpdate = cryptoClient.EncryptUpdate(encipherDataUpdate)
-            if not encipherStateUpdate:
-                raise Exception("Failed Encrypt")
 
             ciphertext = encipherStateUpdate.Ciphered
             encipherDataUpdate = pb.EncryptUpdateRequest(
@@ -117,16 +106,12 @@ def Example_encryptAndDecrypt():
                 Plain=plain[20:]
             )
             encipherStateUpdate = cryptoClient.EncryptUpdate(encipherDataUpdate)
-            if not encipherStateUpdate:
-                raise Exception("Failed Encrypt")
 
             ciphertext = ciphertext + encipherStateUpdate.Ciphered
             encipherDataFinal = pb.EncryptFinalRequest(
                 State=encipherStateUpdate.State
             )
             encipherStateFinal = cryptoClient.EncryptFinal(encipherDataFinal)
-            if not encipherStateFinal:
-                raise Exception("Failed EncryptFinal")
 
             ciphertext = ciphertext + encipherStateFinal.Ciphered
             print("Encrypted message")
@@ -136,16 +121,12 @@ def Example_encryptAndDecrypt():
                 Key=generateKeyStatus.Key # you may want to store this
 	    )
             decipherStateInit = cryptoClient.DecryptInit(decipherInitInfo)
-            if not decipherStateInit:
-                raise Exception("Failed DecryptInit")
 
             decipherDataUpdate = pb.DecryptUpdateRequest(
                 State=decipherStateInit.State,
                 Ciphered=ciphertext[:16]
 	    )
             decipherStateUpdate = cryptoClient.DecryptUpdate(decipherDataUpdate)
-            if not decipherStateUpdate:
-                raise Exception("Failed DecryptUpdate")
 
             plaintext = decipherStateUpdate.Plain[:]
             decipherDataUpdate = pb.DecryptUpdateRequest(
@@ -153,16 +134,14 @@ def Example_encryptAndDecrypt():
 	        Ciphered=ciphertext[16:]
 	    )
             decipherStateUpdate = cryptoClient.DecryptUpdate(decipherDataUpdate)
-            if not decipherStateUpdate:
-                raise Exception("Failed DecryptUpdate")
+
             plaintext = plaintext + decipherStateUpdate.Plain
 
             decipherDataFinal = pb.DecryptFinalRequest(
 	        State=decipherStateUpdate.State
 	    )
             decipherStateFinal = cryptoClient.DecryptFinal(decipherDataFinal)
-            if not decipherStateFinal:
-                raise Exception("Failed DecryptFinal")
+
             plaintext = plaintext + decipherStateFinal.Plain
             
             if plain != plaintext:
@@ -199,44 +178,36 @@ def Example_digest():
                 Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_SHA256)
 	    )
             digestInitResponse = cryptoClient.DigestInit(digestInitRequest)
-            if not digestInitResponse:
-                raise Exception("Digest init error")
+
             digestRequest = pb.DigestRequest(
 		State=digestInitResponse.State,
 		Data=digestData
             )
             digestResponse = cryptoClient.Digest(digestRequest)
-            if not digestResponse:
-                raise Exception("Digest error")
-            else:
-                print("Digest data using a single digest operation: {}\n".format(digestResponse.Digest.hex()))
+
+            print("Digest data using a single digest operation: {}\n".format(digestResponse.Digest.hex()))
 
 	    # Digest using mutiple operations
             digestInitResponse = cryptoClient.DigestInit(digestInitRequest)
-            if not digestInitResponse:
-                raise Exception("Digest init error")
+
             digestUpdateRequest = pb.DigestUpdateRequest(
                 State=digestInitResponse.State,
                 Data=digestData[:64]
             )
             digestUpdateResponse = cryptoClient.DigestUpdate(digestUpdateRequest)
-            if not digestUpdateResponse:
-                raise Exception("Digest update error")
+
             digestUpdateRequest = pb.DigestUpdateRequest(
                 State=digestUpdateResponse.State,
                 Data=digestData[64:]
             )
             digestUpdateResponse = cryptoClient.DigestUpdate(digestUpdateRequest)
-            if not digestUpdateResponse:
-                raise Exception("Digest update error")
+
             digestFinalRequestInfo = pb.DigestFinalRequest(
                 State=digestUpdateResponse.State
             )
             digestFinalResponse = cryptoClient.DigestFinal(digestFinalRequestInfo)
-            if not digestFinalResponse:
-                raise Exception("Digest final error")
-            else:
-                print("Digest data using multiple operations: {}\n".format(digestFinalResponse.Digest.hex()))
+
+            print("Digest data using multiple operations: {}\n".format(digestFinalResponse.Digest.hex()))
 
         except grpc.RpcError as rpc_error:
             print('grpc error details=' + str(rpc_error.details()))
@@ -284,8 +255,7 @@ def Example_signAndVerifyUsingRSAKeyPair():
 		#PubKeyId=str(uuid.uuid4())
             )
             generateKeyPairStatus = cryptoClient.GenerateKeyPair(generateKeypairRequest)
-            if not generateKeyPairStatus:
-                raise Exception("GenerateKeyPair error")
+
             print("Generated RSA PKCS key pair")
 
 	    # Sign data
@@ -294,8 +264,6 @@ def Example_signAndVerifyUsingRSAKeyPair():
 		PrivKey=generateKeyPairStatus.PrivKey
             )
             signInitResponse = cryptoClient.SignInit(signInitRequest)
-            if not signInitResponse:
-                raise Exception("SignInit error")
 
             signData = hashlib.sha256(b'This data needs to be signed').digest()
             signRequest = pb.SignRequest(
@@ -303,8 +271,7 @@ def Example_signAndVerifyUsingRSAKeyPair():
 		Data=signData
             )
             SignResponse = cryptoClient.Sign(signRequest)
-            if not SignResponse:
-                raise Exception("Sign error")
+
             print("Data signed")
 
             verifyInitRequest = pb.VerifyInitRequest(
@@ -312,8 +279,7 @@ def Example_signAndVerifyUsingRSAKeyPair():
 		PubKey=generateKeyPairStatus.PubKey
             )
             verifyInitResponse = cryptoClient.VerifyInit(verifyInitRequest)
-            if not verifyInitResponse:
-                raise Exception("VerifyInit error")
+
             verifyRequest = pb.VerifyRequest(
                 State=verifyInitResponse.State,
 		Data=signData,
@@ -368,8 +334,6 @@ def Example_signAndVerifyUsingECDSAKeyPair():
 		PrivKeyTemplate=privateKeyECTemplate
 	    )
             generateKeyPairStatus = cryptoClient.GenerateKeyPair(generateECKeypairRequest)
-            if not generateKeyPairStatus:
-                raise Exception("GenerateKeyPair error")
             
             print("Generated ECDSA PKCS key pair")
 
@@ -379,16 +343,14 @@ def Example_signAndVerifyUsingECDSAKeyPair():
 		PrivKey=generateKeyPairStatus.PrivKey
             )
             signInitResponse = cryptoClient.SignInit(signInitRequest)
-            if not signInitResponse:
-                raise Exception("SignInit error")
+
             signData = hashlib.sha256(b'This data needs to be signed').digest()
             signRequest = pb.SignRequest(
 		State=signInitResponse.State,
 		Data=signData
             )
             SignResponse = cryptoClient.Sign(signRequest)
-            if not SignResponse:
-                raise Exception("Sign error")
+
             print("Data signed")
 
             verifyInitRequest = pb.VerifyInitRequest(
@@ -396,8 +358,7 @@ def Example_signAndVerifyUsingECDSAKeyPair():
 		PubKey=generateKeyPairStatus.PubKey
 	    )
             verifyInitResponse = cryptoClient.VerifyInit(verifyInitRequest)
-            if not verifyInitResponse:
-                raise Exception("VerifyInit error")
+
             verifyRequest = pb.VerifyRequest(
 		State=verifyInitResponse.State,
 		Data=signData,
@@ -452,8 +413,6 @@ def Example_signAndVerifyToTestErrorHandling():
 		PrivKeyTemplate=privateKeyECTemplate
 	    )
             generateKeyPairStatus = cryptoClient.GenerateKeyPair(generateECKeypairRequest)
-            if not generateKeyPairStatus:
-                raise Exception("GenerateKeyPair error")
             
             print("Generated ECDSA PKCS key pair")
 
@@ -463,16 +422,14 @@ def Example_signAndVerifyToTestErrorHandling():
 		PrivKey=generateKeyPairStatus.PrivKey
 	    )
             signInitResponse = cryptoClient.SignInit(signInitRequest)
-            if not signInitResponse:
-                raise Exception("SignInit error")
+
             signData = hashlib.sha256(b'This data needs to be signed').digest()
             signRequest = pb.SignRequest(
 		State=signInitResponse.State,
 		Data=signData
             )
             SignResponse = cryptoClient.Sign(signRequest)
-            if not SignResponse:
-                raise Exception("Sign error")
+
             print("Data signed")
 
             # Modify signature to force returned error code
@@ -487,8 +444,7 @@ def Example_signAndVerifyToTestErrorHandling():
 		PubKey=generateKeyPairStatus.PubKey
             )
             verifyInitResponse = cryptoClient.VerifyInit(verifyInitRequest)
-            if not verifyInitResponse:
-                raise Exception("VerifyInit error")
+
             verifyRequest = pb.VerifyRequest(
                 State=verifyInitResponse.State,
                 Data=signData,
@@ -534,10 +490,8 @@ def Example_wrapAndUnwrapKey():
 		# KeyId=str(uuid.uuid4()) # optional
             )
             generateNewKeyStatus = cryptoClient.GenerateKey(generateKeyRequest)
-            if not generateNewKeyStatus:
-                raise Exception("Generate AES key error")
-            else:
-                print("Generated AES key")
+
+            print("Generated AES key")
 
             # Generate RSA key pairs
             publicExponent = b'\x11'
@@ -563,8 +517,7 @@ def Example_wrapAndUnwrapKey():
 		# PubKeyId=str(uuid.uuid4())
 	    )
             generateKeyPairStatus = cryptoClient.GenerateKeyPair(generateKeypairRequest)
-            if not generateKeyPairStatus:
-                raise Exception("GenerateKeyPair error")
+
             print("Generated PKCS key pair")
 
             wrapKeyRequest = pb.WrapKeyRequest(
@@ -573,8 +526,7 @@ def Example_wrapAndUnwrapKey():
 		Key=generateNewKeyStatus.Key
 	    )
             wrapKeyResponse = cryptoClient.WrapKey(wrapKeyRequest)
-            if not wrapKeyResponse:
-                raise Exception("Wrap AES key error")
+
             print("Wraped AES key")
 
             desUnwrapKeyTemplate = util.ep11attributes({
@@ -592,8 +544,7 @@ def Example_wrapAndUnwrapKey():
 		Template=desUnwrapKeyTemplate
 	    )
             unWrappedResponse = cryptoClient.UnwrapKey(unwrapRequest)
-            if  not unWrappedResponse:
-                raise Exception("Unwrap AES key error")
+
             if generateNewKeyStatus.CheckSum[:3] != unWrappedResponse.CheckSum[:3]:
                 raise Exception("Unwrap AES key has a different checksum than the original key")
             else:
@@ -646,13 +597,11 @@ def Example_deriveKey():
 		PrivKeyTemplate=privateKeyECTemplate
 	    )
             aliceECKeypairResponse = cryptoClient.GenerateKeyPair(generateECKeypairRequest)
-            if not aliceECKeypairResponse:
-                raise Exception("Generate Alice EC key pair error")
+
             print("Generated Alice EC key pair")
 
             bobECKeypairResponse = cryptoClient.GenerateKeyPair(generateECKeypairRequest)
-            if not bobECKeypairResponse:
-                raise Exception("Generate Bob EC key pair error")
+
             print("Generated Bob EC key pair")
 
 	    # Derive AES key for Alice
@@ -672,8 +621,6 @@ def Example_deriveKey():
 		BaseKey=aliceECKeypairResponse.PrivKey
             )
             aliceDerivekeyResponse = cryptoClient.DeriveKey(aliceDerivekeyRequest)
-            if not aliceDerivekeyResponse:
-                raise Exception("Alice EC key derive error")
 
             # Derive AES key for Bob
             combinedCoordinates = util.GetPubkeyBytesFromSPKI(aliceECKeypairResponse.PubKey)
@@ -685,8 +632,6 @@ def Example_deriveKey():
 		BaseKey=bobECKeypairResponse.PrivKey
             )
             bobDerivekeyResponse = cryptoClient.DeriveKey(bobDerivekeyRequest)
-            if not bobDerivekeyResponse:
-                raise Exception("Bob EC Key Derive Error")
 
 	    # Encrypt with Alice's key and decrypt with Bob's key
             msg = b'hello world!'
@@ -694,17 +639,15 @@ def Example_deriveKey():
 		Len=int(ep11.AES_BLOCK_SIZE)
             )
             rng = cryptoClient.GenerateRandom(rngTemplate)
-            if not rng:
-                raise Exception("GenerateRandom error")
+
             iv = rng.Rnd[:ep11.AES_BLOCK_SIZE]
+
             encryptRequest = pb.EncryptSingleRequest(
                 Key=aliceDerivekeyResponse.NewKey,
 		Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_AES_CBC_PAD, Parameter=iv),
 		Plain=msg
             )
             encryptResponse = cryptoClient.EncryptSingle(encryptRequest)
-            if not encryptResponse:
-                raise Exception("Encrypt error")
             
             decryptRequest = pb.DecryptSingleRequest(
 		Key=bobDerivekeyResponse.NewKey,
@@ -712,8 +655,6 @@ def Example_deriveKey():
 		Ciphered=encryptResponse.Ciphered
             )
             decryptResponse = cryptoClient.DecryptSingle(decryptRequest)
-            if not decryptResponse:
-                raise Exception("Decrypt error")
 
             if decryptResponse.Plain != msg:
                 raise Exception("Decrypted message{} is different from the original message: {}".format(decryptResponse.Plain, msg))
