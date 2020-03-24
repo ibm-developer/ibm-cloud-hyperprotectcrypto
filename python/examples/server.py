@@ -39,6 +39,11 @@ def Example_getMechanismInfo():
 
             if not mechanismInfoResponse:
                 raise Exception("Get mechanism info error")
+
+        except grpc.RpcError as rpc_error:
+            print('grpc error details=' + str(rpc_error.details()))
+            raise Exception(rpc_error)
+    
         except Exception as e:
             print(e)
             import traceback
@@ -57,14 +62,15 @@ def Example_encryptAndDecrypt():
             cryptoClient = server_pb2_grpc.CryptoStub(channel)
         
             keyLen = 128
-            template={}
-            template[ep11.CKA_VALUE_LEN] = int(keyLen/8).to_bytes(8,byteorder='big')
-            template[ep11.CKA_WRAP] = int(False).to_bytes(1,byteorder='big')
-            template[ep11.CKA_UNWRAP] = int(False).to_bytes(1,byteorder='big')
-            template[ep11.CKA_ENCRYPT] = int(True).to_bytes(1,byteorder='big')
-            template[ep11.CKA_DECRYPT] = int(True).to_bytes(1,byteorder='big')
-            template[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big') # set to false!
-            template[ep11.CKA_TOKEN] = int(False).to_bytes(1,byteorder='big') # ignored by EP11
+            template = util.ep11attributes({
+                ep11.CKA_VALUE_LEN: int(keyLen/8),
+                ep11.CKA_WRAP: False,
+                ep11.CKA_UNWRAP: False,
+                ep11.CKA_ENCRYPT: True,
+                ep11.CKA_DECRYPT: True,
+                ep11.CKA_EXTRACTABLE: False, # set to false!
+                ep11.CKA_TOKEN: False # ignored by EP11
+            })
 
             r = pb.GenerateKeyRequest(
                 Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_AES_KEY_GEN),
@@ -164,6 +170,10 @@ def Example_encryptAndDecrypt():
 
             print("Decrypted message\n{}\n".format(plaintext))
 
+        except grpc.RpcError as rpc_error:
+            print('grpc error details=' + str(rpc_error.details()))
+            raise Exception(rpc_error)
+    
         except Exception as e:
             print(e)
             import traceback
@@ -228,6 +238,10 @@ def Example_digest():
             else:
                 print("Digest data using multiple operations: {}\n".format(digestFinalResponse.Digest.hex()))
 
+        except grpc.RpcError as rpc_error:
+            print('grpc error details=' + str(rpc_error.details()))
+            raise Exception(rpc_error)
+    
         except Exception as e:
             print(e)
             import traceback
@@ -246,28 +260,22 @@ def Example_signAndVerifyUsingRSAKeyPair():
         try:
             cryptoClient = server_pb2_grpc.CryptoStub(channel)
         
-            digestData = b'This is the data longer than 64 bytes This is the data longer than 64 bytes'
-            digestInitRequest = pb.DigestInitRequest(
-                Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_SHA256)
-	    )
-            digestInitResponse = cryptoClient.DigestInit(digestInitRequest)
-
 	    # Generate RSA key pairs
             publicExponent = b'\x11'
-            publicKeyTemplate={}
-            publicKeyTemplate[ep11.CKA_ENCRYPT] = int(True).to_bytes(1,byteorder='big')
-            publicKeyTemplate[ep11.CKA_VERIFY] = int(True).to_bytes(1,byteorder='big') # to verify a signature
-            publicKeyTemplate[ep11.CKA_MODULUS_BITS] = int(2048).to_bytes(8,byteorder='big')
-            publicKeyTemplate[ep11.CKA_PUBLIC_EXPONENT] = publicExponent
-            publicKeyTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-
-            privateKeyTemplate={}
-            privateKeyTemplate[ep11.CKA_PRIVATE] = int(True).to_bytes(1,byteorder='big')
-            privateKeyTemplate[ep11.CKA_SENSITIVE] = int(True).to_bytes(1,byteorder='big')
-            privateKeyTemplate[ep11.CKA_DECRYPT] = int(True).to_bytes(1,byteorder='big')
-            privateKeyTemplate[ep11.CKA_SIGN] = int(True).to_bytes(1,byteorder='big') # to generate a signature
-            privateKeyTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-
+            publicKeyTemplate=util.ep11attributes({
+                ep11.CKA_ENCRYPT: True,
+                ep11.CKA_VERIFY: True, # to verify a signature
+                ep11.CKA_MODULUS_BITS: 2048,
+                ep11.CKA_PUBLIC_EXPONENT: publicExponent,
+                ep11.CKA_EXTRACTABLE: False
+            })
+            privateKeyTemplate=util.ep11attributes({
+                ep11.CKA_PRIVATE: True,
+                ep11.CKA_SENSITIVE: True,
+                ep11.CKA_DECRYPT: True,
+                ep11.CKA_SIGN: True, # to generate a signature
+                ep11.CKA_EXTRACTABLE: False
+            })
             generateKeypairRequest = pb.GenerateKeyPairRequest(
 		Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_RSA_PKCS_KEY_PAIR_GEN),
 		PubKeyTemplate=publicKeyTemplate,
@@ -314,6 +322,10 @@ def Example_signAndVerifyUsingRSAKeyPair():
             cryptoClient.Verify(verifyRequest)
             print("Verified")
 
+        except grpc.RpcError as rpc_error:
+            print('grpc error details=' + str(rpc_error.details()))
+            raise Exception(rpc_error)
+    
         except Exception as e:
             print(e)
             import traceback
@@ -341,15 +353,15 @@ def Example_signAndVerifyUsingECDSAKeyPair():
             if not ecParameters:
                 raise Exception("Unable to encode parameter OID")
 
-            publicKeyECTemplate = {}
-            publicKeyECTemplate[ep11.CKA_EC_PARAMS] = ecParameters
-            publicKeyECTemplate[ep11.CKA_VERIFY] = int(True).to_bytes(1,byteorder='big')
-            publicKeyECTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-
-            privateKeyECTemplate = {}
-            privateKeyECTemplate[ep11.CKA_SIGN] = int(True).to_bytes(1,byteorder='big')
-            privateKeyECTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-
+            publicKeyECTemplate = util.ep11attributes({
+                ep11.CKA_EC_PARAMS: ecParameters,
+                ep11.CKA_VERIFY: True,
+                ep11.CKA_EXTRACTABLE: False
+            })
+            privateKeyECTemplate = util.ep11attributes({
+                ep11.CKA_SIGN: True,
+                ep11.CKA_EXTRACTABLE: False
+            })
             generateECKeypairRequest = pb.GenerateKeyPairRequest(
 		Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_EC_KEY_PAIR_GEN),
 		PubKeyTemplate=publicKeyECTemplate,
@@ -394,6 +406,10 @@ def Example_signAndVerifyUsingECDSAKeyPair():
             cryptoClient.Verify(verifyRequest)
             print("Verified")
 
+        except grpc.RpcError as rpc_error:
+            print('grpc error details=' + str(rpc_error.details()))
+            raise Exception(rpc_error)
+    
         except Exception as e:
             print(e)
             import traceback
@@ -421,25 +437,15 @@ def Example_signAndVerifyToTestErrorHandling():
             if not ecParameters:
                 raise Exception("Unable to encode parameter OID")
 
-            publicKeyECTemplate = {}
-            publicKeyECTemplate[ep11.CKA_EC_PARAMS] = ecParameters
-            publicKeyECTemplate[ep11.CKA_VERIFY] = int(True).to_bytes(1,byteorder='big')
-            publicKeyECTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-            
-            privateKeyECTemplate = {}
-            privateKeyECTemplate[ep11.CKA_SIGN] = int(True).to_bytes(1,byteorder='big')
-            privateKeyECTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-
-            generateECKeypairRequest = pb.GenerateKeyPairRequest(
-		Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_EC_KEY_PAIR_GEN),
-		PubKeyTemplate=publicKeyECTemplate,
-		PrivKeyTemplate=privateKeyECTemplate
-	    )
-            generateKeyPairStatus = cryptoClient.GenerateKeyPair(generateECKeypairRequest)
-            if not generateKeyPairStatus:
-                raise Exception("GenerateKeyPair error")
-            
-            print("Generated ECDSA PKCS key pair")
+            publicKeyECTemplate = util.ep11attributes({
+                ep11.CKA_EC_PARAMS: ecParameters,
+                ep11.CKA_VERIFY: True,
+                ep11.CKA_EXTRACTABLE: False
+            })
+            privateKeyECTemplate = util.ep11attributes({
+                ep11.CKA_SIGN: True,
+                ep11.CKA_EXTRACTABLE: False
+            })
             generateECKeypairRequest = pb.GenerateKeyPairRequest(
 		Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_EC_KEY_PAIR_GEN),
 		PubKeyTemplate=publicKeyECTemplate,
@@ -493,7 +499,7 @@ def Example_signAndVerifyToTestErrorHandling():
             
         except grpc.RpcError as rpc_error:
             if rpc_error.details() == 'CKR_SIGNATURE_INVALID':
-                print('Successfully catch an invalid signature.')
+                print('Successfully detected an invalid signature.')
             print('grpc error details=' + str(rpc_error.details()))
             raise Exception(rpc_error)
     
@@ -516,12 +522,12 @@ def Example_wrapAndUnwrapKey():
             cryptoClient = server_pb2_grpc.CryptoStub(channel)
 
             # Generate a AES key
-            destKeyTemplate = {}
-            destKeyTemplate[ep11.CKA_VALUE_LEN] = int(128/8).to_bytes(8,byteorder='big')
-            destKeyTemplate[ep11.CKA_ENCRYPT] = int(True).to_bytes(1,byteorder='big')
-            destKeyTemplate[ep11.CKA_DECRYPT] = int(True).to_bytes(1,byteorder='big')
-            destKeyTemplate[ep11.CKA_EXTRACTABLE] = int(True).to_bytes(1,byteorder='big') # must be true to be wrapped
-
+            destKeyTemplate = util.ep11attributes({
+                ep11.CKA_VALUE_LEN: 16, # 128 bits
+                ep11.CKA_ENCRYPT: True,
+                ep11.CKA_DECRYPT: True,
+                ep11.CKA_EXTRACTABLE: True # must be true to be wrapped
+            })
             generateKeyRequest = pb.GenerateKeyRequest(
                 Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_AES_KEY_GEN),
 		Template=destKeyTemplate,
@@ -535,19 +541,20 @@ def Example_wrapAndUnwrapKey():
 
             # Generate RSA key pairs
             publicExponent = b'\x11'
-            publicKeyTemplate = {}
-            publicKeyTemplate[ep11.CKA_ENCRYPT] = int(True).to_bytes(1,byteorder='big')
-            publicKeyTemplate[ep11.CKA_WRAP] = int(True).to_bytes(1,byteorder='big') # to wrap a key
-            publicKeyTemplate[ep11.CKA_MODULUS_BITS] = int(2048).to_bytes(8,byteorder='big')
-            publicKeyTemplate[ep11.CKA_PUBLIC_EXPONENT] = publicExponent
-            publicKeyTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-            
-            privateKeyTemplate = {}
-            privateKeyTemplate[ep11.CKA_PRIVATE] = int(True).to_bytes(1,byteorder='big')
-            privateKeyTemplate[ep11.CKA_SENSITIVE] = int(True).to_bytes(1,byteorder='big')
-            privateKeyTemplate[ep11.CKA_DECRYPT] = int(True).to_bytes(1,byteorder='big')
-            privateKeyTemplate[ep11.CKA_UNWRAP] = int(True).to_bytes(1,byteorder='big') # to unwrap a key
-            privateKeyTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
+            publicKeyTemplate = util.ep11attributes({
+                ep11.CKA_ENCRYPT: True,
+                ep11.CKA_WRAP: True, # to wrap a key
+                ep11.CKA_MODULUS_BITS: 2048,
+                ep11.CKA_PUBLIC_EXPONENT: publicExponent,
+                ep11.CKA_EXTRACTABLE: False
+            })
+            privateKeyTemplate = util.ep11attributes({
+                ep11.CKA_PRIVATE: True,
+                ep11.CKA_SENSITIVE: True,
+                ep11.CKA_DECRYPT: True,
+                ep11.CKA_UNWRAP: True, # to unwrap a key
+                ep11.CKA_EXTRACTABLE: False
+            })
             generateKeypairRequest = pb.GenerateKeyPairRequest(
 		Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_RSA_PKCS_KEY_PAIR_GEN),
 		PubKeyTemplate=publicKeyTemplate,
@@ -570,13 +577,14 @@ def Example_wrapAndUnwrapKey():
                 raise Exception("Wrap AES key error")
             print("Wraped AES key")
 
-            desUnwrapKeyTemplate = {}
-            desUnwrapKeyTemplate[ep11.CKA_CLASS] = ep11.CKO_SECRET_KEY.to_bytes(8,byteorder='big')
-            desUnwrapKeyTemplate[ep11.CKA_KEY_TYPE] = ep11.CKK_AES.to_bytes(8,byteorder='big')
-            desUnwrapKeyTemplate[ep11.CKA_VALUE_LEN] = int(128/8).to_bytes(8,byteorder='big')
-            desUnwrapKeyTemplate[ep11.CKA_ENCRYPT] = int(True).to_bytes(1,byteorder='big')
-            desUnwrapKeyTemplate[ep11.CKA_DECRYPT] = int(True).to_bytes(1,byteorder='big')
-            desUnwrapKeyTemplate[ep11.CKA_EXTRACTABLE] = int(True).to_bytes(1,byteorder='big') # must be true to be wrapped
+            desUnwrapKeyTemplate = util.ep11attributes({
+                ep11.CKA_CLASS: ep11.CKO_SECRET_KEY,
+                ep11.CKA_KEY_TYPE: ep11.CKK_AES,
+                ep11.CKA_VALUE_LEN: int(128/8),
+                ep11.CKA_ENCRYPT: True,
+                ep11.CKA_DECRYPT: True,
+                ep11.CKA_EXTRACTABLE: True # must be true to be wrapped
+            })
             unwrapRequest = pb.UnwrapKeyRequest(
 		Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_RSA_PKCS),
 		KeK=generateKeyPairStatus.PrivKey,
@@ -591,6 +599,10 @@ def Example_wrapAndUnwrapKey():
             else:
                 print("Unwraped AES key")
 
+        except grpc.RpcError as rpc_error:
+            print('grpc error details=' + str(rpc_error.details()))
+            raise Exception(rpc_error)
+    
         except Exception as e:
             print(e)
             import traceback
@@ -620,14 +632,14 @@ def Example_deriveKey():
             if not ecParameters:
                 raise Exception("Unable to encode parameter OID")
 
-            publicKeyECTemplate = {}
-            publicKeyECTemplate[ep11.CKA_EC_PARAMS] = ecParameters
-            publicKeyECTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-
-            privateKeyECTemplate = {}
-            privateKeyECTemplate[ep11.CKA_DERIVE] = int(True).to_bytes(1,byteorder='big')
-            privateKeyECTemplate[ep11.CKA_EXTRACTABLE] = int(False).to_bytes(1,byteorder='big')
-
+            publicKeyECTemplate = util.ep11attributes({
+                ep11.CKA_EC_PARAMS: ecParameters,
+                ep11.CKA_EXTRACTABLE: False
+            })
+            privateKeyECTemplate = util.ep11attributes({
+                ep11.CKA_DERIVE: True,
+                ep11.CKA_EXTRACTABLE: False
+            })
             generateECKeypairRequest = pb.GenerateKeyPairRequest(
 		Mech=pkcs11_pb2.Mechanism(Mechanism=ep11.CKM_EC_KEY_PAIR_GEN),
 		PubKeyTemplate=publicKeyECTemplate,
@@ -644,12 +656,13 @@ def Example_deriveKey():
             print("Generated Bob EC key pair")
 
 	    # Derive AES key for Alice
-            deriveKeyTemplate = {}
-            deriveKeyTemplate[ep11.CKA_CLASS] = int(ep11.CKO_SECRET_KEY).to_bytes(8,byteorder='big')
-            deriveKeyTemplate[ep11.CKA_KEY_TYPE] = int(ep11.CKK_AES).to_bytes(8,byteorder='big')
-            deriveKeyTemplate[ep11.CKA_VALUE_LEN] = int(128/8).to_bytes(8,byteorder='big')
-            deriveKeyTemplate[ep11.CKA_ENCRYPT] = int(True).to_bytes(1,byteorder='big')
-            deriveKeyTemplate[ep11.CKA_DECRYPT] = int(True).to_bytes(1,byteorder='big')
+            deriveKeyTemplate = util.ep11attributes({
+                ep11.CKA_CLASS: ep11.CKO_SECRET_KEY,
+                ep11.CKA_KEY_TYPE: ep11.CKK_AES,
+                ep11.CKA_VALUE_LEN: int(128/8),
+                ep11.CKA_ENCRYPT: True,
+                ep11.CKA_DECRYPT: True,
+            })
             combinedCoordinates = util.GetPubkeyBytesFromSPKI(bobECKeypairResponse.PubKey)
             if not combinedCoordinates:
                 raise Exception("Bob's EC key cannot obtain coordinates")
@@ -707,6 +720,10 @@ def Example_deriveKey():
             else:
                 print("Alice and Bob get the same derived key")
 
+        except grpc.RpcError as rpc_error:
+            print('grpc error details=' + str(rpc_error.details()))
+            raise Exception(rpc_error)
+    
         except Exception as e:
             print(e)
             import traceback

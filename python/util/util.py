@@ -8,6 +8,21 @@ import time, json, asn1
 import grpc
 from subprocess import check_output
 
+def to_big_bytes(value, length=8):
+    if type(value) is bool:
+        return value.to_bytes(1, byteorder='big')
+    if type(value) is bytes:
+        return value
+    if type(value) is str:
+        return value.encode('utf-8')
+    return value.to_bytes(length, byteorder='big')
+
+def ep11attributes(kv_pairs):
+    attributes = {}
+    for k in kv_pairs.keys():
+        attributes[k] = to_big_bytes(kv_pairs[k])
+    return attributes
+
 # GetPubkeyBytesFromSPKI extracts a coordinate bit array from the public key in SPKI format
 def GetPubkeyBytesFromSPKI(spki):
     decoder = asn1.Decoder()
