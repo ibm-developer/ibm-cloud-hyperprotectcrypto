@@ -1,6 +1,5 @@
 /*
 Copyright IBM Corp. All Rights Reserved.
-
 SPDX-License-Identifier: Apache-2.0
 */
 
@@ -14,6 +13,10 @@ import (
 	"encoding/asn1"
 	"fmt"
 	"reflect"
+	"crypto/x509"
+	"io/ioutil"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/ep11"
 	pb "github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/grpc"
@@ -23,22 +26,40 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// The following IBM Cloud items need to be changed prior to running the sample program
-const address = "<grep11_server_address>:<port>"
+// The following credential items need to be changed prior to running the sample program
+
+
+var yamlConfig, _ = ioutil.ReadFile("credential.yaml")
+
+var	m = make(map[interface{}]interface{})
+var err = yaml.Unmarshal([]byte(yamlConfig), &m)
+
+var address = m["url"].(string) 
+var (
+    crt = m["cert_path"].(string) 
+    key = m["key_path"].(string) 
+    ca  = m["cacert_path"].(string) 
+)
+
+var certificate, _ = tls.LoadX509KeyPair(crt, key)
+var certPool = x509.NewCertPool()
+var cacert, _ = ioutil.ReadFile(ca)
+var a = certPool.AppendCertsFromPEM(cacert)
+
+var creds = credentials.NewTLS(&tls.Config{
+    ServerName:   address, // NOTE: this is required!
+    Certificates: []tls.Certificate{certificate},
+    RootCAs:      certPool,
+})
 
 var callOpts = []grpc.DialOption{
-	grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
-	grpc.WithPerRPCCredentials(&util.IAMPerRPCCredentials{
-		APIKey:   "<ibm_cloud_apikey>",
-		Endpoint: "<https://<iam_ibm_cloud_endpoint>",
-		Instance: "<hpcs_instance_id>",
-	}),
+	grpc.WithTransportCredentials(creds),
 }
 
 // Example_getMechanismInfo retrieves a mechanism list and retrieves detailed information for the CKM_RSA_PKCS mechanism
 // Flow: connect, get mechanism list, get mechanism info
 func Example_getMechanismInfo() {
-	conn, err := grpc.Dial(address, callOpts...)
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		panic(fmt.Errorf("Could not connect to server: %s", err))
 	}
