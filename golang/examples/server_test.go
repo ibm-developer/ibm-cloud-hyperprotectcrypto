@@ -26,7 +26,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// The following credential items need to be changed prior to running the sample program
+// The following credential items need to be changed prior to running the sample program.
 
 
 var yamlConfig, _ = ioutil.ReadFile("credential.yaml")
