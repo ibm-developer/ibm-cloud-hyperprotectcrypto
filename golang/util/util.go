@@ -134,6 +134,7 @@ var (
 	OIDNamedCurveP521 = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
 	oidECPublicKey    = asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
 	oidRSAPublicKey   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	OIDNamedCurveED25519 = asn1.ObjectIdentifier{1, 3, 101, 112}
 )
 
 // GetNamedCurveFromOID returns an elliptic curve from the specified curve OID
@@ -292,3 +293,4 @@ func (cr *IAMPerRPCCredentials) getToken(ctx context.Context) (err error) {
 
 	return nil
 }
+

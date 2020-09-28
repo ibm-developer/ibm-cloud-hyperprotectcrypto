@@ -593,6 +593,8 @@ const (
 	CKM_IBM_EPX                        Mechanism = CKM_VENDOR_DEFINED + 0x61100000
 	CKM_IBM_EPX_WPRM                   Mechanism = CKM_VENDOR_DEFINED + 0x61110000
 
+	CKM_IBM_ED25519_SHA512             Mechanism = CKM_VENDOR_DEFINED + 0x1001c
+
 	CKF_DONT_BLOCK                     MechanismInfoFlag = 0x00000001
 	CKF_HW                             MechanismInfoFlag = 0x00000001
 	CKF_LIBRARY_CANT_CREATE_OS_THREADS MechanismInfoFlag = 0x00000001
@@ -2668,3 +2670,4 @@ func (c Return) String() string {
 func (c Return) Error() string {
 	return c.String()
 }
+
