@@ -60,6 +60,7 @@ func createECDSASelfSignedCert(privKey *util.EP11PrivateKey, commonName string, 
 		Subject: pkix.Name{
 			CommonName: commonName,
 		},
+		DNSNames: []string{commonName},
 		NotBefore: time.Now(),
 		NotAfter:  time.Now().Add(time.Hour * 24 * 180),
 	}
