@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"reflect"
 	"sync"
 	"time"
@@ -46,51 +47,68 @@ func DumpAttributes(attrs map[ep11.Attribute][]byte) string {
 	return buffer.String()
 }
 
-// NewAttribute is a convenience function to make conversions to []C.CK_ATTRIBUTE more convenient
-func NewAttribute(aType ep11.Attribute, val interface{}) *ep11.AttributeStruct {
-	return &ep11.AttributeStruct{
-		Type:  aType,
-		Value: NewAttributeValue(val),
-	}
-}
-
-// NewAttributeMap creates a map of ep11 attributes
-func NewAttributeMap(attrs ...*ep11.AttributeStruct) map[ep11.Attribute][]byte {
-	rc := make(map[ep11.Attribute][]byte)
-	for _, val := range attrs {
-		rc[val.Type] = val.Value
+// AttributeMap is a map conversion helper function
+func AttributeMap(attrs ep11.EP11Attributes) map[ep11.Attribute]*pb.AttributeValue {
+	rc := make(map[ep11.Attribute]*pb.AttributeValue)
+	for attr, val := range attrs {
+		rc[attr] = AttributeValue(val)
 	}
 
 	return rc
 }
 
-// NewAttributeValue converts a Golang-based attribute type to a C-based attribute type
-func NewAttributeValue(val interface{}) []byte {
+// AttributeValue converts a standard Golang type into an AttributeValue structure
+func AttributeValue(v interface{}) *pb.AttributeValue {
+	if v == nil {
+		return &pb.AttributeValue{}
+	}
+
+	val := reflect.ValueOf(v)
+	switch val.Kind() {
+	case reflect.Bool:
+		return &pb.AttributeValue{OneAttr: &pb.AttributeValue_AttributeTF{AttributeTF: val.Bool()}}
+	case reflect.String:
+		return &pb.AttributeValue{OneAttr: &pb.AttributeValue_AttributeB{AttributeB: []byte(val.String())}}
+	case reflect.Slice:
+		return &pb.AttributeValue{OneAttr: &pb.AttributeValue_AttributeB{AttributeB: val.Bytes()}}
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return &pb.AttributeValue{OneAttr: &pb.AttributeValue_AttributeI{AttributeI: val.Int()}}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return &pb.AttributeValue{OneAttr: &pb.AttributeValue_AttributeI{AttributeI: int64(val.Uint())}}
+	default:
+		buf := new(bytes.Buffer)
+		binary.Write(buf, binary.BigEndian, val)
+		return &pb.AttributeValue{OneAttr: &pb.AttributeValue_AttributeB{AttributeB: buf.Bytes()}}
+	}
+}
+
+// GetAttributeByteValue obtains the byte slice equivalent of an attribute struct
+func GetAttributeByteValue(val interface{}) ([]byte, error) {
 	if val == nil {
-		return nil
+		return nil, fmt.Errorf("value for attribute processing is nil")
 	}
 	switch v := val.(type) {
 	case bool:
 		if v {
-			return []byte{1}
+			return []byte{1}, nil
+		} else {
+			return []byte{0}, nil
 		}
-		return []byte{0}
 	case string:
-		return []byte(v)
+		return []byte(v), nil
 	case []byte:
-		return v
+		return v, nil
 	default:
 		buf := new(bytes.Buffer)
 		err := binary.Write(buf, binary.BigEndian, val)
 		if err != nil {
-			panic("PKCS11: Unhandled attribute type " + err.Error())
+			return nil, fmt.Errorf("unhandled attribute type: %s", err)
 		}
-		return buf.Bytes()
+		return buf.Bytes(), nil
 	}
 }
 
-// Convert returns a formatted GREP11 error message
-// The contents of the error message depend on the source of the error
+// Convert is a helper function for generating proper Grep11Error structures
 func Convert(err error) (bool, *pb.Grep11Error) {
 	if err == nil {
 		return true, nil
@@ -109,7 +127,7 @@ func Convert(err error) (bool, *pb.Grep11Error) {
 	if len(detail) != 1 {
 		return false, &pb.Grep11Error{
 			Code:   ep11.CKR_GENERAL_ERROR,
-			Detail: fmt.Sprintf("Expected only one error: [%s]", err),
+			Detail: fmt.Sprintf("Error: [%s]", err),
 			Retry:  true,
 		}
 	}
@@ -118,7 +136,7 @@ func Convert(err error) (bool, *pb.Grep11Error) {
 	if !ok {
 		return false, &pb.Grep11Error{
 			Code:   ep11.CKR_GENERAL_ERROR,
-			Detail: fmt.Sprintf("Detail is the wrong type [%s]: [%s]", reflect.TypeOf(detail[0]), err),
+			Detail: fmt.Sprintf("Error [%s]: [%s]", reflect.TypeOf(detail[0]), err),
 			Retry:  true,
 		}
 	}
@@ -128,13 +146,14 @@ func Convert(err error) (bool, *pb.Grep11Error) {
 
 var (
 	// The following variables are standardized elliptic curve definitions
-	OIDNamedCurveP224 = asn1.ObjectIdentifier{1, 3, 132, 0, 33}
-	OIDNamedCurveP256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
-	OIDNamedCurveP384 = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
-	OIDNamedCurveP521 = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
-	oidECPublicKey    = asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
-	oidRSAPublicKey   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
-	OIDNamedCurveED25519 = asn1.ObjectIdentifier{1, 3, 101, 112}
+	OIDNamedCurveP224      = asn1.ObjectIdentifier{1, 3, 132, 0, 33}
+	OIDNamedCurveP256      = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
+	OIDNamedCurveP384      = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
+	OIDNamedCurveP521      = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
+	oidECPublicKey         = asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
+	oidRSAPublicKey        = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	OIDNamedCurveSecp256k1 = asn1.ObjectIdentifier{1, 3, 132, 0, 10}
+	OIDNamedCurveED25519   = asn1.ObjectIdentifier{1, 3, 101, 112}
 )
 
 // GetNamedCurveFromOID returns an elliptic curve from the specified curve OID
@@ -294,3 +313,17 @@ func (cr *IAMPerRPCCredentials) getToken(ctx context.Context) (err error) {
 	return nil
 }
 
+// Pause is a helper function that pauses test execution until the user types CTRL-c
+func Pause(m chan string, sigs chan os.Signal, message string) {
+	os.Stderr.WriteString("\n" + message + "\n")
+loop:
+	for {
+		select {
+		case <-sigs:
+			fmt.Println("")
+			break loop
+		case <-m:
+		}
+	}
+	return
+}

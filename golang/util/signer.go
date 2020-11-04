@@ -80,4 +80,3 @@ func NewEP11Signer(cryptoClient pb.CryptoClient, privKeyBlob []byte, spki []byte
 	}
 	return priv, nil
 }
-
