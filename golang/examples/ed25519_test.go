@@ -1,24 +1,23 @@
 package examples
 
 import (
-        "context"
-        "crypto/sha256"
-        "encoding/asn1"
-        "fmt"
-        "testing"
-        "crypto/tls"
-        "crypto/x509"
-        "io/ioutil"
-        yaml "gopkg.in/yaml.v2"
+	"context"
+	"crypto/sha256"
+	"encoding/asn1"
+	"fmt"
+	"testing"
+	"crypto/x509"
+    "io/ioutil"
+    "crypto/tls"
+    yaml "gopkg.in/yaml.v2"
 
-        "google.golang.org/grpc/credentials"
-        "github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/ep11"
-        pb "github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/grpc"
-        "github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/util"
-        "github.com/stretchr/testify/assert"
-        grpc "google.golang.org/grpc"
+	"github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/ep11"
+	pb "github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/grpc"
+	"github.com/ibm-developer/ibm-cloud-hyperprotectcrypto/golang/util"
+	"github.com/stretchr/testify/assert"
+	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
-
 
 var yamlConfig, _ = ioutil.ReadFile("credential.yaml")
 
@@ -44,6 +43,7 @@ var creds = credentials.NewTLS(&tls.Config{
 })
 
 var callOpts = []grpc.DialOption{
+        //grpc.WithInsecure(),
         grpc.WithTransportCredentials(creds),
 }
 
@@ -114,9 +114,9 @@ func TestED25519SignVerify(t *testing.T) {
 	assert.NoError(t, err)
 
 	signData := sha256.New().Sum([]byte("This data needs to be signed"))
-	signature, err := ed25519KeySign(t, cryptoClient, generateKeyPairResponse.PrivKey, signData)
+	signature, err := ed25519KeySign(t, cryptoClient, generateKeyPairResponse.PrivKeyBytes, signData)
 	assert.NoError(t, err)
-	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponse.PubKey, signData, signature)
+	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponse.PubKeyBytes, signData, signature)
 	assert.NoError(t, err)
 }
 
@@ -133,10 +133,12 @@ func TestED25519SignVerifyMulti(t *testing.T) {
 	assert.NoError(t, err)
 
 	signData := sha256.New().Sum([]byte("This data needs to be signed"))
-	signature, err := ed25519KeySignMulti(t, cryptoClient, generateKeyPairResponse.PrivKey, signData)
+	signature, err := ed25519KeySignMulti(t, cryptoClient, generateKeyPairResponse.PrivKeyBytes, signData)
+	// An error is expected: SignUpdate is not supported for ed25519
 	assert.Contains(t, err.Error(), "SignUpdate error")
 
-	err = ed25519KeyVerifyMulti(t, cryptoClient, generateKeyPairResponse.PubKey, signData, signature)
+	err = ed25519KeyVerifyMulti(t, cryptoClient, generateKeyPairResponse.PubKeyBytes, signData, signature)
+	// An error is expected: VerifyUpdate is not supported for ed25519
 	assert.Contains(t, err.Error(), "VerifyUpdate error")
 }
 
@@ -153,10 +155,10 @@ func TestED25519SignVerifySingle(t *testing.T) {
 	assert.NoError(t, err)
 
 	signData := sha256.New().Sum([]byte("This data needs to be signed"))
-	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponse.PrivKey, signData)
+	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponse.PrivKeyBytes, signData)
 	assert.NoError(t, err)
 
-	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponse.PubKey, signData, signature)
+	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponse.PubKeyBytes, signData, signature)
 	assert.NoError(t, err)
 }
 
@@ -166,19 +168,19 @@ func ed25519KeyGenerate(x testingX, cryptoClient pb.CryptoClient) (*pb.GenerateK
 		return nil, fmt.Errorf("Unable to encode parameter OID: %s", err)
 	}
 
-	publicKeyECTemplate := util.NewAttributeMap(
-		util.NewAttribute(ep11.CKA_EC_PARAMS, ecParameters),
-		util.NewAttribute(ep11.CKA_VERIFY, true),
-		util.NewAttribute(ep11.CKA_EXTRACTABLE, false),
-	)
-	privateKeyECTemplate := util.NewAttributeMap(
-		util.NewAttribute(ep11.CKA_SIGN, true),
-		util.NewAttribute(ep11.CKA_EXTRACTABLE, false),
-	)
+	publicKeyECTemplate := ep11.EP11Attributes{
+		ep11.CKA_EC_PARAMS:   ecParameters,
+		ep11.CKA_VERIFY:      true,
+		ep11.CKA_EXTRACTABLE: false,
+	}
+	privateKeyECTemplate := ep11.EP11Attributes{
+		ep11.CKA_SIGN:        true,
+		ep11.CKA_EXTRACTABLE: false,
+	}
 	generateECKeypairRequest := &pb.GenerateKeyPairRequest{
 		Mech:            &pb.Mechanism{Mechanism: ep11.CKM_EC_KEY_PAIR_GEN},
-		PubKeyTemplate:  publicKeyECTemplate,
-		PrivKeyTemplate: privateKeyECTemplate,
+		PubKeyTemplate:  util.AttributeMap(publicKeyECTemplate),
+		PrivKeyTemplate: util.AttributeMap(privateKeyECTemplate),
 	}
 	generateKeyPairResponse, err := cryptoClient.GenerateKeyPair(context.Background(), generateECKeypairRequest)
 	if err != nil {
@@ -355,15 +357,15 @@ func TestED25519SignVerifyCrosstest(t *testing.T) {
 	assert.NoError(t, err)
 
 	signData := sha256.New().Sum([]byte("This data needs to be signed"))
-	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponse.PrivKey, signData)
+	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponse.PrivKeyBytes, signData)
 	assert.NoError(t, err)
-	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponse.PubKey, signData, signature)
+	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponse.PubKeyBytes, signData, signature)
 	assert.NoError(t, err)
 
 	signData = sha256.New().Sum([]byte("This data needs to be signed"))
-	signature, err = ed25519KeySign(t, cryptoClient, generateKeyPairResponse.PrivKey, signData)
+	signature, err = ed25519KeySign(t, cryptoClient, generateKeyPairResponse.PrivKeyBytes, signData)
 	assert.NoError(t, err)
-	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponse.PubKey, signData, signature)
+	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponse.PubKeyBytes, signData, signature)
 	assert.NoError(t, err)
 }
 
@@ -374,19 +376,19 @@ func ecdsaKeyGenerate(x testingX, cryptoClient pb.CryptoClient) (*pb.GenerateKey
 		return nil, fmt.Errorf("Unable to encode parameter OID: %s", err)
 	}
 
-	publicKeyECTemplate := util.NewAttributeMap(
-		util.NewAttribute(ep11.CKA_EC_PARAMS, ecParameters),
-		util.NewAttribute(ep11.CKA_VERIFY, true),
-		util.NewAttribute(ep11.CKA_EXTRACTABLE, false),
-	)
-	privateKeyECTemplate := util.NewAttributeMap(
-		util.NewAttribute(ep11.CKA_SIGN, true),
-		util.NewAttribute(ep11.CKA_EXTRACTABLE, false),
-	)
+	publicKeyECTemplate := ep11.EP11Attributes{
+		ep11.CKA_EC_PARAMS:   ecParameters,
+		ep11.CKA_VERIFY:      true,
+		ep11.CKA_EXTRACTABLE: false,
+	}
+	privateKeyECTemplate := ep11.EP11Attributes{
+		ep11.CKA_SIGN:        true,
+		ep11.CKA_EXTRACTABLE: false,
+	}
 	generateECKeypairRequest := &pb.GenerateKeyPairRequest{
 		Mech:            &pb.Mechanism{Mechanism: ep11.CKM_EC_KEY_PAIR_GEN},
-		PubKeyTemplate:  publicKeyECTemplate,
-		PrivKeyTemplate: privateKeyECTemplate,
+		PubKeyTemplate:  util.AttributeMap(publicKeyECTemplate),
+		PrivKeyTemplate: util.AttributeMap(privateKeyECTemplate),
 	}
 	generateKeyPairResponse, err := cryptoClient.GenerateKeyPair(context.Background(), generateECKeypairRequest)
 	if err != nil {
@@ -427,17 +429,17 @@ func TestED25519InvalidKeyType(t *testing.T) {
 
 	// Sign with the wrong key type
 	signData := sha256.New().Sum([]byte("This data needs to be signed"))
-	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseECDSA.PrivKey, signData)
+	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseECDSA.PrivKeyBytes, signData)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "SignSingle error")
 	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
 
-	signature, err = ed25519KeySign(t, cryptoClient, generateKeyPairResponseECDSA.PrivKey, signData)
+	signature, err = ed25519KeySign(t, cryptoClient, generateKeyPairResponseECDSA.PrivKeyBytes, signData)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "SignInit error")
 	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
 
-	signature, err = ed25519KeySignMulti(t, cryptoClient, generateKeyPairResponseECDSA.PrivKey, signData)
+	signature, err = ed25519KeySignMulti(t, cryptoClient, generateKeyPairResponseECDSA.PrivKeyBytes, signData)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "SignInit error")
 	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
@@ -445,19 +447,19 @@ func TestED25519InvalidKeyType(t *testing.T) {
 	// Verify with the wrong key type
 	generateKeyPairResponseED25519, err := ed25519KeyGenerate(t, cryptoClient)
 	assert.NoError(t, err)
-	signature, err = ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseED25519.PrivKey, signData)
+	signature, err = ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseED25519.PrivKeyBytes, signData)
 	assert.NoError(t, err)
 
-	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseECDSA.PubKey, signData, signature)
+	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseECDSA.PubKeyBytes, signData, signature)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "VerifySingle error")
 
-	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseECDSA.PubKey, signData, signature)
+	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseECDSA.PubKeyBytes, signData, signature)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "VerifyInit error")
 	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
 
-	err = ed25519KeyVerifyMulti(t, cryptoClient, generateKeyPairResponseECDSA.PubKey, signData, signature)
+	err = ed25519KeyVerifyMulti(t, cryptoClient, generateKeyPairResponseECDSA.PubKeyBytes, signData, signature)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "VerifyInit error")
 	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
@@ -491,7 +493,7 @@ func TestED25519InvalidKeys(t *testing.T) {
 		// Verify with the wrong key
 		generateKeyPairResponseED25519, err := ed25519KeyGenerate(t, cryptoClient)
 		assert.NoError(t, err)
-		signature, err = ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseED25519.PrivKey, signData)
+		signature, err = ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseED25519.PrivKeyBytes, signData)
 		assert.NoError(t, err)
 
 		err = ed25519KeyVerifySingle(t, cryptoClient, []byte(keyWrong), signData, signature)
@@ -521,7 +523,7 @@ func TestED25519InvalidSignature(t *testing.T) {
 	generateKeyPairResponseED25519, err := ed25519KeyGenerate(t, cryptoClient)
 	assert.NoError(t, err)
 
-	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseED25519.PrivKey, signData)
+	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseED25519.PrivKeyBytes, signData)
 	assert.NoError(t, err)
 
 	signatureWrong := []([]byte){
@@ -533,11 +535,11 @@ func TestED25519InvalidSignature(t *testing.T) {
 	}
 
 	for _, signature := range signatureWrong {
-		err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseED25519.PubKey, signData, signature)
+		err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseED25519.PubKeyBytes, signData, signature)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Verify error")
 
-		err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseED25519.PubKey, signData, signature)
+		err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseED25519.PubKeyBytes, signData, signature)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "VerifySingle error")
 	}
@@ -546,26 +548,26 @@ func TestED25519InvalidSignature(t *testing.T) {
 	rng, err := cryptoClient.GenerateRandom(context.Background(), rngTemplate)
 	assert.NoError(t, err)
 
-	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseED25519.PubKey, signData, rng.Rnd[:64])
+	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseED25519.PubKeyBytes, signData, rng.Rnd[:64])
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Verify: Invalid signature")
 
-	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseED25519.PubKey, signData, rng.Rnd[:64])
+	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseED25519.PubKeyBytes, signData, rng.Rnd[:64])
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "VerifySingle: Invalid signature")
 
 	generateKeyPairResponseECDSA, err := ecdsaKeyGenerate(t, cryptoClient)
 	assert.NoError(t, err)
 
-	signature, err = ecdsaKeySignSingle(t, cryptoClient, generateKeyPairResponseECDSA.PrivKey, signData)
+	signature, err = ecdsaKeySignSingle(t, cryptoClient, generateKeyPairResponseECDSA.PrivKeyBytes, signData)
 	assert.NoError(t, err)
 
 	// Verify a ECDSA signature with ED25519 public key
-	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseED25519.PubKey, signData, signature)
+	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseED25519.PubKeyBytes, signData, signature)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Invalid signature")
 
-	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseED25519.PubKey, signData, signature)
+	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseED25519.PubKeyBytes, signData, signature)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Invalid signature")
 
@@ -573,11 +575,11 @@ func TestED25519InvalidSignature(t *testing.T) {
 	//assert.Error(t, err)
 	//assert.Contains(t, err.Error(), "Invalid signature")
 
-	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseED25519.PubKey, signData, nil)
+	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseED25519.PubKeyBytes, signData, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Verify error")
 
-	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseED25519.PubKey, signData, nil)
+	err = ed25519KeyVerifySingle(t, cryptoClient, generateKeyPairResponseED25519.PubKeyBytes, signData, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "VerifySingle error")
 
@@ -644,19 +646,19 @@ func TestED25519ParallelSignVerify(t *testing.T) {
 	chs := make([]chan error, 10)
 	for i := 0; i < 10; i++ {
 		chs[i] = make(chan error)
-		go ed25519KeySignChanWrap(t, cryptoClient, chs[i], generateKeyPairResponse.PrivKey, signData)
+		go ed25519KeySignChanWrap(t, cryptoClient, chs[i], generateKeyPairResponse.PrivKeyBytes, signData)
 	}
 
 	for _, ch := range chs {
 		assert.NoError(t, <-ch)
 	}
 
-	signature, err := ed25519KeySign(t, cryptoClient, generateKeyPairResponse.PrivKey, signData)
+	signature, err := ed25519KeySign(t, cryptoClient, generateKeyPairResponse.PrivKeyBytes, signData)
 	assert.NoError(t, err)
 
 	for i := 0; i < 10; i++ {
 		chs[i] = make(chan error)
-		go ed25519KeyVerifyChanWrap(t, cryptoClient, chs[i], generateKeyPairResponse.PubKey, signData, signature)
+		go ed25519KeyVerifyChanWrap(t, cryptoClient, chs[i], generateKeyPairResponse.PubKeyBytes, signData, signature)
 	}
 
 	for _, ch := range chs {
@@ -680,23 +682,22 @@ func TestED25519ParallelSignVerifySingle(t *testing.T) {
 	chs := make([]chan error, 10)
 	for i := 0; i < 10; i++ {
 		chs[i] = make(chan error)
-		go ed25519KeySignSingleChanWrap(t, cryptoClient, chs[i], generateKeyPairResponse.PrivKey, signData)
+		go ed25519KeySignSingleChanWrap(t, cryptoClient, chs[i], generateKeyPairResponse.PrivKeyBytes, signData)
 	}
 
 	for _, ch := range chs {
 		assert.NoError(t, <-ch)
 	}
 
-	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponse.PrivKey, signData)
+	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponse.PrivKeyBytes, signData)
 	assert.NoError(t, err)
 
 	for i := 0; i < 10; i++ {
 		chs[i] = make(chan error)
-		go ed25519KeyVerifySingleChanWrap(t, cryptoClient, chs[i], generateKeyPairResponse.PubKey, signData, signature)
+		go ed25519KeyVerifySingleChanWrap(t, cryptoClient, chs[i], generateKeyPairResponse.PubKeyBytes, signData, signature)
 	}
 
 	for _, ch := range chs {
 		assert.NoError(t, <-ch)
 	}
 }
-
