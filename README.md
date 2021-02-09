@@ -1,3 +1,13 @@
+
+# Deprecation Notice
+Updated GREP11 code example repositories for Go and Javascript have been separated out and moved to the following repositories:
+- [Go code example repository](https://github.com/IBM-Cloud/hpcs-grep11-go)
+- [Javascript code example repository](https://github.com/IBM-Cloud/hpcs-grep11-js)  (coming soon)
+
+In addition, the following repository can be referenced to create additional language specific GREP11 clients:
+- [GREP11 API repository](https://github.com/IBM-Cloud/hpcs-grep11)
+
+Please reference the new repositories for all GREP11 API code examples. There will be no future updates to this repository.
 # Overview
 
 This repository contains software to be used to connect to the **IBM Cloud Hyper Protect Crypto Services (HPCS)**  offering. For more information regarding this service please review the [HPCS documentation](https://cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-get-started).
