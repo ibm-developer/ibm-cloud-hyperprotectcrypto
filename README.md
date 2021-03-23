@@ -2,7 +2,7 @@
 # Deprecation Notice
 Updated GREP11 code example repositories for Go and Javascript have been separated out and moved to the following repositories:
 - [Go code example repository](https://github.com/IBM-Cloud/hpcs-grep11-go)
-- [Javascript code example repository](https://github.com/IBM-Cloud/hpcs-grep11-js)  (coming soon)
+- [Javascript code example repository](https://github.com/IBM-Cloud/hpcs-grep11-js)
 
 In addition, the following repository can be referenced to create additional language specific GREP11 clients:
 - [GREP11 API repository](https://github.com/IBM-Cloud/hpcs-grep11)
