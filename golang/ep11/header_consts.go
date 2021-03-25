@@ -13,143 +13,357 @@ import (
 	"fmt"
 	"github.com/gogo/protobuf/jsonpb"
 	"strconv"
+	"strings"
 )
 
+type AdminCommand uint32
 type Attribute uint64
+type CardAttributeFlags uint32
+type CardAttributeKey uint32
+type ControlPoint uint32
+type FunctionID uint32
+type ImporterKeyType uint32
 type KeyType uint64
 type Mechanism uint64
 type MechanismInfoFlag uint64
 type ObjectClass uint64
 type Return uint64
 
+type EP11Attributes map[Attribute]interface{}
+
+// Deprecated: here for backwards compatibility for []byte attributes
 type AttributeStruct struct {
 	Type  Attribute
 	Value []byte
 }
 
 const (
-	CKA_CLASS                      Attribute = 0x00000000
-	CKA_TOKEN                      Attribute = 0x00000001
-	CKA_PRIVATE                    Attribute = 0x00000002
-	CKA_LABEL                      Attribute = 0x00000003
-	CKA_APPLICATION                Attribute = 0x00000010
-	CKA_VALUE                      Attribute = 0x00000011
-	CKA_OBJECT_ID                  Attribute = 0x00000012
-	CKA_CERTIFICATE_TYPE           Attribute = 0x00000080
-	CKA_ISSUER                     Attribute = 0x00000081
-	CKA_SERIAL_NUMBER              Attribute = 0x00000082
-	CKA_AC_ISSUER                  Attribute = 0x00000083
-	CKA_OWNER                      Attribute = 0x00000084
-	CKA_ATTR_TYPES                 Attribute = 0x00000085
-	CKA_TRUSTED                    Attribute = 0x00000086
-	CKA_CERTIFICATE_CATEGORY       Attribute = 0x00000087
-	CKA_JAVA_MIDP_SECURITY_DOMAIN  Attribute = 0x00000088
-	CKA_URL                        Attribute = 0x00000089
-	CKA_HASH_OF_SUBJECT_PUBLIC_KEY Attribute = 0x0000008a
-	CKA_HASH_OF_ISSUER_PUBLIC_KEY  Attribute = 0x0000008b
-	CKA_NAME_HASH_ALGORITHM        Attribute = 0x0000008c
-	CKA_CHECK_VALUE                Attribute = 0x00000090
-	CKA_KEY_TYPE                   Attribute = 0x00000100
-	CKA_SUBJECT                    Attribute = 0x00000101
-	CKA_ID                         Attribute = 0x00000102
-	CKA_SENSITIVE                  Attribute = 0x00000103
-	CKA_ENCRYPT                    Attribute = 0x00000104
-	CKA_DECRYPT                    Attribute = 0x00000105
-	CKA_WRAP                       Attribute = 0x00000106
-	CKA_UNWRAP                     Attribute = 0x00000107
-	CKA_SIGN                       Attribute = 0x00000108
-	CKA_SIGN_RECOVER               Attribute = 0x00000109
-	CKA_VERIFY                     Attribute = 0x0000010a
-	CKA_VERIFY_RECOVER             Attribute = 0x0000010b
-	CKA_DERIVE                     Attribute = 0x0000010c
-	CKA_START_DATE                 Attribute = 0x00000110
-	CKA_END_DATE                   Attribute = 0x00000111
-	CKA_MODULUS                    Attribute = 0x00000120
-	CKA_MODULUS_BITS               Attribute = 0x00000121
-	CKA_PUBLIC_EXPONENT            Attribute = 0x00000122
-	CKA_PRIVATE_EXPONENT           Attribute = 0x00000123
-	CKA_PRIME_1                    Attribute = 0x00000124
-	CKA_PRIME_2                    Attribute = 0x00000125
-	CKA_EXPONENT_1                 Attribute = 0x00000126
-	CKA_EXPONENT_2                 Attribute = 0x00000127
-	CKA_COEFFICIENT                Attribute = 0x00000128
-	CKA_PUBLIC_KEY_INFO            Attribute = 0x00000129
-	CKA_PRIME                      Attribute = 0x00000130
-	CKA_SUBPRIME                   Attribute = 0x00000131
-	CKA_BASE                       Attribute = 0x00000132
-	CKA_PRIME_BITS                 Attribute = 0x00000133
-	CKA_SUBPRIME_BITS              Attribute = 0x00000134
-	CKA_SUB_PRIME_BITS             Attribute = 0x00000134
-	CKA_VALUE_BITS                 Attribute = 0x00000160
-	CKA_VALUE_LEN                  Attribute = 0x00000161
-	CKA_EXTRACTABLE                Attribute = 0x00000162
-	CKA_LOCAL                      Attribute = 0x00000163
-	CKA_NEVER_EXTRACTABLE          Attribute = 0x00000164
-	CKA_ALWAYS_SENSITIVE           Attribute = 0x00000165
-	CKA_KEY_GEN_MECHANISM          Attribute = 0x00000166
-	CKA_MODIFIABLE                 Attribute = 0x00000170
-	CKA_COPYABLE                   Attribute = 0x00000171
-	CKA_DESTROYABLE                Attribute = 0x00000172
-	CKA_ECDSA_PARAMS               Attribute = 0x00000180
-	CKA_EC_PARAMS                  Attribute = 0x00000180
-	CKA_EC_POINT                   Attribute = 0x00000181
-	CKA_SECONDARY_AUTH             Attribute = 0x00000200
-	CKA_AUTH_PIN_FLAGS             Attribute = 0x00000201
-	CKA_ALWAYS_AUTHENTICATE        Attribute = 0x00000202
-	CKA_WRAP_WITH_TRUSTED          Attribute = 0x00000210
-	CKA_OTP_FORMAT                 Attribute = 0x00000220
-	CKA_OTP_LENGTH                 Attribute = 0x00000221
-	CKA_OTP_TIME_INTERVAL          Attribute = 0x00000222
-	CKA_OTP_USER_FRIENDLY_MODE     Attribute = 0x00000223
-	CKA_OTP_CHALLENGE_REQUIREMENT  Attribute = 0x00000224
-	CKA_OTP_TIME_REQUIREMENT       Attribute = 0x00000225
-	CKA_OTP_COUNTER_REQUIREMENT    Attribute = 0x00000226
-	CKA_OTP_PIN_REQUIREMENT        Attribute = 0x00000227
-	CKA_OTP_USER_IDENTIFIER        Attribute = 0x0000022a
-	CKA_OTP_SERVICE_IDENTIFIER     Attribute = 0x0000022b
-	CKA_OTP_SERVICE_LOGO           Attribute = 0x0000022c
-	CKA_OTP_SERVICE_LOGO_TYPE      Attribute = 0x0000022d
-	CKA_OTP_COUNTER                Attribute = 0x0000022e
-	CKA_OTP_TIME                   Attribute = 0x0000022f
-	CKA_GOSTR3410_PARAMS           Attribute = 0x00000250
-	CKA_GOSTR3411_PARAMS           Attribute = 0x00000251
-	CKA_GOST28147_PARAMS           Attribute = 0x00000252
-	CKA_HW_FEATURE_TYPE            Attribute = 0x00000300
-	CKA_RESET_ON_INIT              Attribute = 0x00000301
-	CKA_HAS_RESET                  Attribute = 0x00000302
-	CKA_PIXEL_X                    Attribute = 0x00000400
-	CKA_PIXEL_Y                    Attribute = 0x00000401
-	CKA_RESOLUTION                 Attribute = 0x00000402
-	CKA_CHAR_ROWS                  Attribute = 0x00000403
-	CKA_CHAR_COLUMNS               Attribute = 0x00000404
-	CKA_COLOR                      Attribute = 0x00000405
-	CKA_BITS_PER_PIXEL             Attribute = 0x00000406
-	CKA_CHAR_SETS                  Attribute = 0x00000480
-	CKA_ENCODING_METHODS           Attribute = 0x00000481
-	CKA_MIME_TYPES                 Attribute = 0x00000482
-	CKA_MECHANISM_TYPE             Attribute = 0x00000500
-	CKA_REQUIRED_CMS_ATTRIBUTES    Attribute = 0x00000501
-	CKA_DEFAULT_CMS_ATTRIBUTES     Attribute = 0x00000502
-	CKA_SUPPORTED_CMS_ATTRIBUTES   Attribute = 0x00000503
-	CKA_WRAP_TEMPLATE              Attribute = 0x40000211
-	CKA_UNWRAP_TEMPLATE            Attribute = 0x40000212
-	CKA_ALLOWED_MECHANISMS         Attribute = 0x40000600
-	CKA_VENDOR_DEFINED             Attribute = 0x80000000
-	CKA_IBM_RESTRICTABLE           Attribute = CKA_VENDOR_DEFINED + 0x10001
-	CKA_IBM_NEVER_MODIFIABLE       Attribute = CKA_VENDOR_DEFINED + 0x10002
-	CKA_IBM_RETAINKEY              Attribute = CKA_VENDOR_DEFINED + 0x10003
-	CKA_IBM_ATTRBOUND              Attribute = CKA_VENDOR_DEFINED + 0x10004
-	CKA_IBM_KEYTYPE                Attribute = CKA_VENDOR_DEFINED + 0x10005
-	CKA_IBM_CV                     Attribute = CKA_VENDOR_DEFINED + 0x10006
-	CKA_IBM_MACKEY                 Attribute = CKA_VENDOR_DEFINED + 0x10007
-	CKA_IBM_USE_AS_DATA            Attribute = CKA_VENDOR_DEFINED + 0x10008
-	CKA_IBM_STRUCT_PARAMS          Attribute = CKA_VENDOR_DEFINED + 0x10009
-	CKA_IBM_STD_COMPLIANCE1        Attribute = CKA_VENDOR_DEFINED + 0x1000a
-	CKA_IBM_MLS_TYPE               Attribute = CKA_VENDOR_DEFINED + 0x1000b
-	CKA_IBM_WIRETEST               Attribute = CKA_VENDOR_DEFINED + 0x20001
-	CKA_VENDOR_DEFINED_GREP11      Attribute = CKA_VENDOR_DEFINED + 0x40000
-	CKA_GREP11_RAW_KEYBLOB         Attribute = CKA_VENDOR_DEFINED_GREP11 + 0x1
-	CKA_IBM_EPX                    Attribute = CKA_VENDOR_DEFINED_GREP11 + 0x61100000
+	XCP_ADM_ADMIN_LOGIN         AdminCommand = 0x00000001
+	XCP_ADM_DOM_ADMIN_LOGIN     AdminCommand = 0x00000002
+	XCP_ADM_ADMIN_LOGOUT        AdminCommand = 0x00000003
+	XCP_ADM_DOM_ADMIN_LOGOUT    AdminCommand = 0x00000004
+	XCP_ADM_ADMIN_REPLACE       AdminCommand = 0x00000005
+	XCP_ADM_DOM_ADMIN_REPLACE   AdminCommand = 0x00000006
+	XCP_ADM_SET_ATTR            AdminCommand = 0x00000007
+	XCP_ADM_DOM_SET_ATTR        AdminCommand = 0x00000008
+	XCP_ADM_GEN_DOM_IMPORTER    AdminCommand = 0x00000009
+	XCP_ADM_GEN_WK              AdminCommand = 0x0000000a
+	XCP_ADM_EXPORT_WK           AdminCommand = 0x0000000b
+	XCP_ADM_IMPORT_WK           AdminCommand = 0x0000000c
+	XCP_ADM_COMMIT_WK           AdminCommand = 0x0000000d
+	XCP_ADM_FINALIZE_WK         AdminCommand = 0x0000000e
+	XCP_ADM_ZEROIZE             AdminCommand = 0x0000000f
+	XCP_ADM_DOM_ZEROIZE         AdminCommand = 0x00000010
+	XCP_ADM_DOM_CTRLPOINT_SET   AdminCommand = 0x00000011
+	XCP_ADM_DOM_CTRLPOINT_ADD   AdminCommand = 0x00000012
+	XCP_ADM_DOM_CTRLPOINT_DEL   AdminCommand = 0x00000013
+	XCP_ADM_SET_CLOCK           AdminCommand = 0x00000014
+	XCP_ADM_SET_FCV             AdminCommand = 0x00000015
+	XCP_ADM_CTRLPOINT_SET       AdminCommand = 0x00000016
+	XCP_ADM_CTRLPOINT_ADD       AdminCommand = 0x00000017
+	XCP_ADM_CTRLPOINT_DEL       AdminCommand = 0x00000018
+	XCP_ADM_REENCRYPT           AdminCommand = 0x00000019
+	XCP_ADM_RK_REMOVE           AdminCommand = 0x0000001a
+	XCP_ADM_CLEAR_WK            AdminCommand = 0x0000001b
+	XCP_ADM_CLEAR_NEXT_WK       AdminCommand = 0x0000001c
+	XCP_ADM_SYSTEM_ZEROIZE      AdminCommand = 0x0000001d
+	XCP_ADM_EXPORT_STATE        AdminCommand = 0x0000001e
+	XCP_ADM_IMPORT_STATE        AdminCommand = 0x0000001f
+	XCP_ADM_COMMIT_STATE        AdminCommand = 0x00000020
+	XCP_ADM_REMOVE_STATE        AdminCommand = 0x00000021
+	XCP_ADM_GEN_MODULE_IMPORTER AdminCommand = 0x00000022
+	XCP_ADM_SET_TRUSTED         AdminCommand = 0x00000023
+	XCP_ADM_DOMAINS_ZEROIZE     AdminCommand = 0x00000024
+	XCP_ADM_SESSION_REMOVE      AdminCommand = 0x00000025
+	XCP_ADM_EXPORT_NEXT_WK      AdminCommand = 0x00000026
+	XCP_ADMQ_ADMIN              AdminCommand = 0x00010001
+	XCP_ADMQ_DOMADMIN           AdminCommand = 0x00010002
+	XCP_ADMQ_DEVICE_CERT        AdminCommand = 0x00010003
+	XCP_ADMQ_DOM_IMPORTER_CERT  AdminCommand = 0x00010004
+	XCP_ADMQ_CTRLPOINTS         AdminCommand = 0x00010005
+	XCP_ADMQ_DOM_CTRLPOINTS     AdminCommand = 0x00010006
+	XCP_ADMQ_WK                 AdminCommand = 0x00010007
+	XCP_ADMQ_NEXT_WK            AdminCommand = 0x00010008
+	XCP_ADMQ_ATTRS              AdminCommand = 0x00010009
+	XCP_ADMQ_DOM_ATTRS          AdminCommand = 0x0001000a
+	XCP_ADMQ_FCV                AdminCommand = 0x0001000b
+	XCP_ADMQ_WK_ORIGINS         AdminCommand = 0x0001000c
+	XCP_ADMQ_RKLIST             AdminCommand = 0x0001000d
+	XCP_ADMQ_INTERNAL_STATE     AdminCommand = 0x0001000e
+	XCP_ADMQ_IMPORTER_CERT      AdminCommand = 0x0001000f
+	XCP_ADMQ_AUDIT_STATE        AdminCommand = 0x00010010
+
+	CKA_CLASS                         Attribute = 0x00000000
+	CKA_TOKEN                         Attribute = 0x00000001
+	CKA_PRIVATE                       Attribute = 0x00000002
+	CKA_LABEL                         Attribute = 0x00000003
+	CKA_APPLICATION                   Attribute = 0x00000010
+	CKA_VALUE                         Attribute = 0x00000011
+	CKA_OBJECT_ID                     Attribute = 0x00000012
+	CKA_CERTIFICATE_TYPE              Attribute = 0x00000080
+	CKA_ISSUER                        Attribute = 0x00000081
+	CKA_SERIAL_NUMBER                 Attribute = 0x00000082
+	CKA_AC_ISSUER                     Attribute = 0x00000083
+	CKA_OWNER                         Attribute = 0x00000084
+	CKA_ATTR_TYPES                    Attribute = 0x00000085
+	CKA_TRUSTED                       Attribute = 0x00000086
+	CKA_CERTIFICATE_CATEGORY          Attribute = 0x00000087
+	CKA_JAVA_MIDP_SECURITY_DOMAIN     Attribute = 0x00000088
+	CKA_URL                           Attribute = 0x00000089
+	CKA_HASH_OF_SUBJECT_PUBLIC_KEY    Attribute = 0x0000008a
+	CKA_HASH_OF_ISSUER_PUBLIC_KEY     Attribute = 0x0000008b
+	CKA_NAME_HASH_ALGORITHM           Attribute = 0x0000008c
+	CKA_CHECK_VALUE                   Attribute = 0x00000090
+	CKA_KEY_TYPE                      Attribute = 0x00000100
+	CKA_SUBJECT                       Attribute = 0x00000101
+	CKA_ID                            Attribute = 0x00000102
+	CKA_SENSITIVE                     Attribute = 0x00000103
+	CKA_ENCRYPT                       Attribute = 0x00000104
+	CKA_DECRYPT                       Attribute = 0x00000105
+	CKA_WRAP                          Attribute = 0x00000106
+	CKA_UNWRAP                        Attribute = 0x00000107
+	CKA_SIGN                          Attribute = 0x00000108
+	CKA_SIGN_RECOVER                  Attribute = 0x00000109
+	CKA_VERIFY                        Attribute = 0x0000010a
+	CKA_VERIFY_RECOVER                Attribute = 0x0000010b
+	CKA_DERIVE                        Attribute = 0x0000010c
+	CKA_START_DATE                    Attribute = 0x00000110
+	CKA_END_DATE                      Attribute = 0x00000111
+	CKA_MODULUS                       Attribute = 0x00000120
+	CKA_MODULUS_BITS                  Attribute = 0x00000121
+	CKA_PUBLIC_EXPONENT               Attribute = 0x00000122
+	CKA_PRIVATE_EXPONENT              Attribute = 0x00000123
+	CKA_PRIME_1                       Attribute = 0x00000124
+	CKA_PRIME_2                       Attribute = 0x00000125
+	CKA_EXPONENT_1                    Attribute = 0x00000126
+	CKA_EXPONENT_2                    Attribute = 0x00000127
+	CKA_COEFFICIENT                   Attribute = 0x00000128
+	CKA_PUBLIC_KEY_INFO               Attribute = 0x00000129
+	CKA_PRIME                         Attribute = 0x00000130
+	CKA_SUBPRIME                      Attribute = 0x00000131
+	CKA_BASE                          Attribute = 0x00000132
+	CKA_PRIME_BITS                    Attribute = 0x00000133
+	CKA_SUBPRIME_BITS                 Attribute = 0x00000134
+	CKA_SUB_PRIME_BITS                Attribute = 0x00000134
+	CKA_VALUE_BITS                    Attribute = 0x00000160
+	CKA_VALUE_LEN                     Attribute = 0x00000161
+	CKA_EXTRACTABLE                   Attribute = 0x00000162
+	CKA_LOCAL                         Attribute = 0x00000163
+	CKA_NEVER_EXTRACTABLE             Attribute = 0x00000164
+	CKA_ALWAYS_SENSITIVE              Attribute = 0x00000165
+	CKA_KEY_GEN_MECHANISM             Attribute = 0x00000166
+	CKA_MODIFIABLE                    Attribute = 0x00000170
+	CKA_COPYABLE                      Attribute = 0x00000171
+	CKA_DESTROYABLE                   Attribute = 0x00000172
+	CKA_ECDSA_PARAMS                  Attribute = 0x00000180
+	CKA_EC_PARAMS                     Attribute = 0x00000180
+	CKA_EC_POINT                      Attribute = 0x00000181
+	CKA_SECONDARY_AUTH                Attribute = 0x00000200
+	CKA_AUTH_PIN_FLAGS                Attribute = 0x00000201
+	CKA_ALWAYS_AUTHENTICATE           Attribute = 0x00000202
+	CKA_WRAP_WITH_TRUSTED             Attribute = 0x00000210
+	CKA_OTP_FORMAT                    Attribute = 0x00000220
+	CKA_OTP_LENGTH                    Attribute = 0x00000221
+	CKA_OTP_TIME_INTERVAL             Attribute = 0x00000222
+	CKA_OTP_USER_FRIENDLY_MODE        Attribute = 0x00000223
+	CKA_OTP_CHALLENGE_REQUIREMENT     Attribute = 0x00000224
+	CKA_OTP_TIME_REQUIREMENT          Attribute = 0x00000225
+	CKA_OTP_COUNTER_REQUIREMENT       Attribute = 0x00000226
+	CKA_OTP_PIN_REQUIREMENT           Attribute = 0x00000227
+	CKA_OTP_USER_IDENTIFIER           Attribute = 0x0000022a
+	CKA_OTP_SERVICE_IDENTIFIER        Attribute = 0x0000022b
+	CKA_OTP_SERVICE_LOGO              Attribute = 0x0000022c
+	CKA_OTP_SERVICE_LOGO_TYPE         Attribute = 0x0000022d
+	CKA_OTP_COUNTER                   Attribute = 0x0000022e
+	CKA_OTP_TIME                      Attribute = 0x0000022f
+	CKA_GOSTR3410_PARAMS              Attribute = 0x00000250
+	CKA_GOSTR3411_PARAMS              Attribute = 0x00000251
+	CKA_GOST28147_PARAMS              Attribute = 0x00000252
+	CKA_HW_FEATURE_TYPE               Attribute = 0x00000300
+	CKA_RESET_ON_INIT                 Attribute = 0x00000301
+	CKA_HAS_RESET                     Attribute = 0x00000302
+	CKA_PIXEL_X                       Attribute = 0x00000400
+	CKA_PIXEL_Y                       Attribute = 0x00000401
+	CKA_RESOLUTION                    Attribute = 0x00000402
+	CKA_CHAR_ROWS                     Attribute = 0x00000403
+	CKA_CHAR_COLUMNS                  Attribute = 0x00000404
+	CKA_COLOR                         Attribute = 0x00000405
+	CKA_BITS_PER_PIXEL                Attribute = 0x00000406
+	CKA_CHAR_SETS                     Attribute = 0x00000480
+	CKA_ENCODING_METHODS              Attribute = 0x00000481
+	CKA_MIME_TYPES                    Attribute = 0x00000482
+	CKA_MECHANISM_TYPE                Attribute = 0x00000500
+	CKA_REQUIRED_CMS_ATTRIBUTES       Attribute = 0x00000501
+	CKA_DEFAULT_CMS_ATTRIBUTES        Attribute = 0x00000502
+	CKA_SUPPORTED_CMS_ATTRIBUTES      Attribute = 0x00000503
+	CKA_WRAP_TEMPLATE                 Attribute = 0x40000211
+	CKA_UNWRAP_TEMPLATE               Attribute = 0x40000212
+	CKA_DERIVE_TEMPLATE               Attribute = 0x40000213
+	CKA_ALLOWED_MECHANISMS            Attribute = 0x40000600
+	CKA_VENDOR_DEFINED                Attribute = 0x80000000
+	CKA_IBM_RESTRICTABLE              Attribute = CKA_VENDOR_DEFINED + 0x10001
+	CKA_IBM_NEVER_MODIFIABLE          Attribute = CKA_VENDOR_DEFINED + 0x10002
+	CKA_IBM_RETAINKEY                 Attribute = CKA_VENDOR_DEFINED + 0x10003
+	CKA_IBM_ATTRBOUND                 Attribute = CKA_VENDOR_DEFINED + 0x10004
+	CKA_IBM_KEYTYPE                   Attribute = CKA_VENDOR_DEFINED + 0x10005
+	CKA_IBM_CV                        Attribute = CKA_VENDOR_DEFINED + 0x10006
+	CKA_IBM_MACKEY                    Attribute = CKA_VENDOR_DEFINED + 0x10007
+	CKA_IBM_USE_AS_DATA               Attribute = CKA_VENDOR_DEFINED + 0x10008
+	CKA_IBM_STRUCT_PARAMS             Attribute = CKA_VENDOR_DEFINED + 0x10009
+	CKA_IBM_STD_COMPLIANCE1           Attribute = CKA_VENDOR_DEFINED + 0x1000a
+	CKA_IBM_MLS_TYPE                  Attribute = CKA_VENDOR_DEFINED + 0x1000b
+	CKA_IBM_PROTKEY_EXTRACTABLE       Attribute = CKA_VENDOR_DEFINED + 0x1000c
+	CKA_IBM_PROTKEY_NEVER_EXTRACTABLE Attribute = CKA_VENDOR_DEFINED + 0x1000d
+	CKA_IBM_WIRETEST                  Attribute = CKA_VENDOR_DEFINED + 0x20001
+	CKA_VENDOR_DEFINED_GREP11         Attribute = CKA_VENDOR_DEFINED + 0x40000
+	CKA_GREP11_TOKEN_LABEL            Attribute = CKA_VENDOR_DEFINED_GREP11 + 0x1
+	CKA_GREP11_RAW_KEYBLOB            Attribute = CKA_VENDOR_DEFINED_GREP11 + 0x2
+	CKA_GREP11_VOTE_VERSION           Attribute = CKA_VENDOR_DEFINED_GREP11 + 0x3
+	CKA_IBM_EPX                       Attribute = CKA_VENDOR_DEFINED_GREP11 + 0x61100000
+
+	XCP_ADMP_WK_IMPORT          CardAttributeFlags = 0x00000001
+	XCP_ADMP_WK_EXPORT          CardAttributeFlags = 0x00000002
+	XCP_ADMP_WK_1PART           CardAttributeFlags = 0x00000004
+	XCP_ADMP_WK_RANDOM          CardAttributeFlags = 0x00000008
+	XCP_ADMP_1SIGN              CardAttributeFlags = 0x00000010
+	XCP_ADMP_CP_1SIGN           CardAttributeFlags = 0x00000020
+	XCP_ADMP_ZERO_1SIGN         CardAttributeFlags = 0x00000040
+	XCP_ADMP_NO_DOMAIN_IMPRINT  CardAttributeFlags = 0x00000080
+	XCP_ADMP_STATE_IMPORT       CardAttributeFlags = 0x00000100
+	XCP_ADMP_STATE_EXPORT       CardAttributeFlags = 0x00000200
+	XCP_ADMP_STATE_1PART        CardAttributeFlags = 0x00000400
+	XCP_ADMP_NO_EPX             CardAttributeFlags = 0x00000800
+	XCP_ADMP_NO_EPXVM           CardAttributeFlags = 0x00001000
+	XCP_ADMP_DO_NOT_DISTURB     CardAttributeFlags = 0x00002000
+	XCP_ADMP__PERMS             CardAttributeFlags = 0x00003fff
+	XCP_ADMP_CHG_WK_IMPORT      CardAttributeFlags = 0x00010000
+	XCP_ADMP_CHG_WK_EXPORT      CardAttributeFlags = 0x00020000
+	XCP_ADMP_CHG_WK_1PART       CardAttributeFlags = 0x00040000
+	XCP_ADMP_CHG_WK_RANDOM      CardAttributeFlags = 0x00080000
+	XCP_ADMP_CHG_SIGN_THR       CardAttributeFlags = 0x00100000
+	XCP_ADMP_CHG_REVOKE_THR     CardAttributeFlags = 0x00200000
+	XCP_ADMP_CHG_1SIGN          CardAttributeFlags = 0x00400000
+	XCP_ADMP_CHG_CP_1SIGN       CardAttributeFlags = 0x00800000
+	XCP_ADMP_CHG_ZERO_1SIGN     CardAttributeFlags = 0x01000000
+	XCP_ADMP_CHG_ST_IMPORT      CardAttributeFlags = 0x02000000
+	XCP_ADMP_CHG_ST_EXPORT      CardAttributeFlags = 0x04000000
+	XCP_ADMP_CHG_ST_1PART       CardAttributeFlags = 0x08000000
+	XCP_ADMP_CHG_NO_EPX         CardAttributeFlags = 0x20000000
+	XCP_ADMP_CHG_NO_EPXVM       CardAttributeFlags = 0x40000000
+	XCP_ADMP_NOT_SUP            CardAttributeFlags = 0x60001800
+	XCP_ADMP_CHG_DO_NOT_DISTURB CardAttributeFlags = 0x80000000
+	XCP_ADMP__CHGBITS           CardAttributeFlags = 0x8fff0000
+	XCP_ADMP__DEFAULT           CardAttributeFlags = 0x8fff0011
+
+	XCP_ADMINT_SIGN_THR   CardAttributeKey = 0x00000001
+	XCP_ADMINT_REVOKE_THR CardAttributeKey = 0x00000002
+	XCP_ADMINT_PERMS      CardAttributeKey = 0x00000003
+	XCP_ADMINT_MODE       CardAttributeKey = 0x00000004
+	XCP_ADMINT_STD        CardAttributeKey = 0x00000005
+
+	XCP_CPB_ADD_CPBS           ControlPoint = 0x00000000
+	XCP_CPB_DELETE_CPBS        ControlPoint = 0x00000001
+	XCP_CPB_SIGN_ASYMM         ControlPoint = 0x00000002
+	XCP_CPB_SIGN_SYMM          ControlPoint = 0x00000003
+	XCP_CPB_SIGVERIFY_SYMM     ControlPoint = 0x00000004
+	XCP_CPB_ENCRYPT_SYMM       ControlPoint = 0x00000005
+	XCP_CPB_DECRYPT_ASYMM      ControlPoint = 0x00000006
+	XCP_CPB_DECRYPT_SYMM       ControlPoint = 0x00000007
+	XCP_CPB_WRAP_ASYMM         ControlPoint = 0x00000008
+	XCP_CPB_WRAP_SYMM          ControlPoint = 0x00000009
+	XCP_CPB_UNWRAP_ASYMM       ControlPoint = 0x0000000a
+	XCP_CPB_UNWRAP_SYMM        ControlPoint = 0x0000000b
+	XCP_CPB_KEYGEN_ASYMM       ControlPoint = 0x0000000c
+	XCP_CPB_KEYGEN_SYMM        ControlPoint = 0x0000000d
+	XCP_CPB_RETAINKEYS         ControlPoint = 0x0000000e
+	XCP_CPB_SKIP_KEYTESTS      ControlPoint = 0x0000000f
+	XCP_CPB_NON_ATTRBOUND      ControlPoint = 0x00000010
+	XCP_CPB_MODIFY_OBJECTS     ControlPoint = 0x00000011
+	XCP_CPB_RNG_SEED           ControlPoint = 0x00000012
+	XCP_CPB_ALG_RAW_RSA        ControlPoint = 0x00000013
+	XCP_CPB_ALG_NFIPS2009      ControlPoint = 0x00000014
+	XCP_CPB_ALG_NBSI2009       ControlPoint = 0x00000015
+	XCP_CPB_KEYSZ_HMAC_ANY     ControlPoint = 0x00000016
+	XCP_CPB_KEYSZ_BELOW80BIT   ControlPoint = 0x00000017
+	XCP_CPB_KEYSZ_80BIT        ControlPoint = 0x00000018
+	XCP_CPB_KEYSZ_112BIT       ControlPoint = 0x00000019
+	XCP_CPB_KEYSZ_128BIT       ControlPoint = 0x0000001a
+	XCP_CPB_KEYSZ_192BIT       ControlPoint = 0x0000001b
+	XCP_CPB_KEYSZ_256BIT       ControlPoint = 0x0000001c
+	XCP_CPB_KEYSZ_RSA65536     ControlPoint = 0x0000001d
+	XCP_CPB_ALG_RSA            ControlPoint = 0x0000001e
+	XCP_CPB_ALG_DSA            ControlPoint = 0x0000001f
+	XCP_CPB_ALG_EC             ControlPoint = 0x00000020
+	XCP_CPB_ALG_EC_BPOOLCRV    ControlPoint = 0x00000021
+	XCP_CPB_ALG_EC_NISTCRV     ControlPoint = 0x00000022
+	XCP_CPB_ALG_NFIPS2011      ControlPoint = 0x00000023
+	XCP_CPB_ALG_NBSI2011       ControlPoint = 0x00000024
+	XCP_CPB_USER_SET_TRUSTED   ControlPoint = 0x00000025
+	XCP_CPB_ALG_SKIP_CROSSCHK  ControlPoint = 0x00000026
+	XCP_CPB_WRAP_CRYPT_KEYS    ControlPoint = 0x00000027
+	XCP_CPB_SIGN_CRYPT_KEYS    ControlPoint = 0x00000028
+	XCP_CPB_WRAP_SIGN_KEYS     ControlPoint = 0x00000029
+	XCP_CPB_USER_SET_ATTRBOUND ControlPoint = 0x0000002a
+	XCP_CPB_ALLOW_PASSPHRASE   ControlPoint = 0x0000002b
+	XCP_CPB_WRAP_STRONGER_KEY  ControlPoint = 0x0000002c
+	XCP_CPB_WRAP_WITH_RAW_SPKI ControlPoint = 0x0000002d
+	XCP_CPB_ALG_DH             ControlPoint = 0x0000002e
+	XCP_CPB_DERIVE             ControlPoint = 0x0000002f
+	XCP_CPB_ALG_EC_25519       ControlPoint = 0x00000037
+	XCP_CPB_ALG_NBSI2017       ControlPoint = 0x0000003d
+	XCP_CPB_EMV                ControlPoint = 0x0000003e
+	XCP_CPB_EMV_MIX            ControlPoint = 0x0000003f
+	XCP_CPB_BTC                ControlPoint = 0x00000042
+
+	FNID_Login             FunctionID = 0x00000001
+	FNID_Logout            FunctionID = 0x00000002
+	FNID_SeedRandom        FunctionID = 0x00000003
+	FNID_GenerateRandom    FunctionID = 0x00000004
+	FNID_DigestInit        FunctionID = 0x00000005
+	FNID_DigestUpdate      FunctionID = 0x00000006
+	FNID_DigestKey         FunctionID = 0x00000007
+	FNID_DigestFinal       FunctionID = 0x00000008
+	FNID_Digest            FunctionID = 0x00000009
+	FNID_DigestSingle      FunctionID = 0x0000000a
+	FNID_EncryptInit       FunctionID = 0x0000000b
+	FNID_DecryptInit       FunctionID = 0x0000000c
+	FNID_EncryptUpdate     FunctionID = 0x0000000d
+	FNID_DecryptUpdate     FunctionID = 0x0000000e
+	FNID_EncryptFinal      FunctionID = 0x0000000f
+	FNID_DecryptFinal      FunctionID = 0x00000010
+	FNID_Encrypt           FunctionID = 0x00000011
+	FNID_Decrypt           FunctionID = 0x00000012
+	FNID_EncryptSingle     FunctionID = 0x00000013
+	FNID_DecryptSingle     FunctionID = 0x00000014
+	FNID_GenerateKey       FunctionID = 0x00000015
+	FNID_GenerateKeyPair   FunctionID = 0x00000016
+	FNID_SignInit          FunctionID = 0x00000017
+	FNID_SignUpdate        FunctionID = 0x00000018
+	FNID_SignFinal         FunctionID = 0x00000019
+	FNID_Sign              FunctionID = 0x0000001a
+	FNID_VerifyInit        FunctionID = 0x0000001b
+	FNID_VerifyUpdate      FunctionID = 0x0000001c
+	FNID_VerifyFinal       FunctionID = 0x0000001d
+	FNID_Verify            FunctionID = 0x0000001e
+	FNID_SignSingle        FunctionID = 0x0000001f
+	FNID_VerifySingle      FunctionID = 0x00000020
+	FNID_WrapKey           FunctionID = 0x00000021
+	FNID_UnwrapKey         FunctionID = 0x00000022
+	FNID_DeriveKey         FunctionID = 0x00000023
+	FNID_GetMechanismList  FunctionID = 0x00000024
+	FNID_GetMechanismInfo  FunctionID = 0x00000025
+	FNID_get_xcp_info      FunctionID = 0x00000026
+	FNID_GetAttributeValue FunctionID = 0x00000027
+	FNID_SetAttributeValue FunctionID = 0x00000028
+	FNID_admin             FunctionID = 0x00000029
+	FNID_ReencryptSingle   FunctionID = 0x0000002a
+	FNID_NEXT_AVAILABLE    FunctionID = 0x0000002b
+
+	XCP_IMPRKEY_RSA_2048 ImporterKeyType = 0x00000000
+	XCP_IMPRKEY_RSA_4096 ImporterKeyType = 0x00000001
+	XCP_IMPRKEY_EC_P256  ImporterKeyType = 0x00000002
+	XCP_IMPRKEY_EC_P521  ImporterKeyType = 0x00000003
+	XCP_IMPRKEY_RSA_3072 ImporterKeyType = 0x00000007
 
 	CKK_RSA                KeyType = 0x00000000
 	CKK_DSA                KeyType = 0x00000001
@@ -182,18 +396,18 @@ const (
 	CKK_ACTI               KeyType = 0x00000024
 	CKK_CAMELLIA           KeyType = 0x00000025
 	CKK_ARIA               KeyType = 0x00000026
-	CKK_SHA512_224_HMAC    KeyType = 0x00000027
-	CKK_SHA512_256_HMAC    KeyType = 0x00000028
-	CKK_SHA512_T_HMAC      KeyType = 0x00000029
-	CKK_SHA_1_HMAC         KeyType = 0x00000040
-	CKK_SHA224_HMAC        KeyType = 0x00000041
-	CKK_SHA256_HMAC        KeyType = 0x00000042
-	CKK_SHA384_HMAC        KeyType = 0x00000043
-	CKK_SHA512_HMAC        KeyType = 0x00000044
-	CKK_SEED               KeyType = 0x00000050
-	CKK_GOSTR3410          KeyType = 0x00000060
-	CKK_GOSTR3411          KeyType = 0x00000061
-	CKK_GOST28147          KeyType = 0x00000062
+	CKK_MD5_HMAC           KeyType = 0x00000027
+	CKK_SHA_1_HMAC         KeyType = 0x00000028
+	CKK_RIPEMD128_HMAC     KeyType = 0x00000029
+	CKK_RIPEMD160_HMAC     KeyType = 0x0000002a
+	CKK_SHA256_HMAC        KeyType = 0x0000002b
+	CKK_SHA384_HMAC        KeyType = 0x0000002c
+	CKK_SHA512_HMAC        KeyType = 0x0000002d
+	CKK_SHA224_HMAC        KeyType = 0x0000002e
+	CKK_SEED               KeyType = 0x0000002f
+	CKK_GOSTR3410          KeyType = 0x00000030
+	CKK_GOSTR3411          KeyType = 0x00000031
+	CKK_GOST28147          KeyType = 0x00000032
 	CKK_VENDOR_DEFINED     KeyType = 0x80000000
 	CKK_IBM_SM4            KeyType = CKK_VENDOR_DEFINED + 0x50001
 	CKK_IBM_SM2            KeyType = CKK_VENDOR_DEFINED + 0x50002
@@ -220,11 +434,10 @@ const (
 	CKM_DSA_KEY_PAIR_GEN               Mechanism = 0x00000010
 	CKM_DSA                            Mechanism = 0x00000011
 	CKM_DSA_SHA1                       Mechanism = 0x00000012
-	CKM_DSA_FIPS_G_GEN                 Mechanism = 0x00000013
-	CKM_DSA_SHA224                     Mechanism = 0x00000014
-	CKM_DSA_SHA256                     Mechanism = 0x00000015
-	CKM_DSA_SHA384                     Mechanism = 0x00000016
-	CKM_DSA_SHA512                     Mechanism = 0x00000017
+	CKM_DSA_SHA224                     Mechanism = 0x00000013
+	CKM_DSA_SHA256                     Mechanism = 0x00000014
+	CKM_DSA_SHA384                     Mechanism = 0x00000015
+	CKM_DSA_SHA512                     Mechanism = 0x00000016
 	CKM_DH_PKCS_KEY_PAIR_GEN           Mechanism = 0x00000020
 	CKM_DH_PKCS_DERIVE                 Mechanism = 0x00000021
 	CKM_X9_42_DH_KEY_PAIR_GEN          Mechanism = 0x00000030
@@ -466,6 +679,10 @@ const (
 	CKM_EC_KEY_PAIR_GEN                Mechanism = 0x00001040
 	CKM_ECDSA                          Mechanism = 0x00001041
 	CKM_ECDSA_SHA1                     Mechanism = 0x00001042
+	CKM_ECDSA_SHA224                   Mechanism = 0x00001043
+	CKM_ECDSA_SHA256                   Mechanism = 0x00001044
+	CKM_ECDSA_SHA384                   Mechanism = 0x00001045
+	CKM_ECDSA_SHA512                   Mechanism = 0x00001046
 	CKM_ECDH1_DERIVE                   Mechanism = 0x00001050
 	CKM_ECDH1_COFACTOR_DERIVE          Mechanism = 0x00001051
 	CKM_ECMQV_DERIVE                   Mechanism = 0x00001052
@@ -487,9 +704,9 @@ const (
 	CKM_AES_CTR                        Mechanism = 0x00001086
 	CKM_AES_GCM                        Mechanism = 0x00001087
 	CKM_AES_CCM                        Mechanism = 0x00001088
-	CKM_AES_CMAC_GENERAL               Mechanism = 0x00001089
+	CKM_AES_CTS                        Mechanism = 0x00001089
 	CKM_AES_CMAC                       Mechanism = 0x0000108a
-	CKM_AES_CTS                        Mechanism = 0x0000108b
+	CKM_AES_CMAC_GENERAL               Mechanism = 0x0000108b
 	CKM_AES_XCBC_MAC                   Mechanism = 0x0000108c
 	CKM_AES_XCBC_MAC_96                Mechanism = 0x0000108d
 	CKM_AES_GMAC                       Mechanism = 0x0000108e
@@ -558,18 +775,27 @@ const (
 	CKM_IBM_SHA512_224_HMAC_GENERAL    Mechanism = CKM_VENDOR_DEFINED + 0x10018
 	CKM_IBM_SHA512_256_KEY_DERIVATION  Mechanism = CKM_VENDOR_DEFINED + 0x10019
 	CKM_IBM_SHA512_224_KEY_DERIVATION  Mechanism = CKM_VENDOR_DEFINED + 0x1001a
-	CKM_IBM_EC_C25519                  Mechanism = CKM_VENDOR_DEFINED + 0x1001b
-	CKM_IBM_EDDSA_SHA512               Mechanism = CKM_VENDOR_DEFINED + 0x1001c
-	CKM_IBM_EDDSA_PH_SHA512            Mechanism = CKM_VENDOR_DEFINED + 0x1001d
-	CKM_IBM_EC_C448                    Mechanism = CKM_VENDOR_DEFINED + 0x1001e
+	CKM_IBM_EC_X25519                  Mechanism = CKM_VENDOR_DEFINED + 0x1001b
+	CKM_IBM_ED25519_SHA512             Mechanism = CKM_VENDOR_DEFINED + 0x1001c
+	CKM_IBM_ED25519_PH_SHA512          Mechanism = CKM_VENDOR_DEFINED + 0x1001d
+	CKM_IBM_EC_X448                    Mechanism = CKM_VENDOR_DEFINED + 0x1001e
 	CKM_IBM_ED448_SHA3                 Mechanism = CKM_VENDOR_DEFINED + 0x1001f
 	CKM_IBM_ED448_PH_SHA3              Mechanism = CKM_VENDOR_DEFINED + 0x10020
 	CKM_IBM_SIPHASH                    Mechanism = CKM_VENDOR_DEFINED + 0x10021
+	CKM_IBM_SHA3_224_HMAC              Mechanism = CKM_VENDOR_DEFINED + 0x10025
+	CKM_IBM_SHA3_256_HMAC              Mechanism = CKM_VENDOR_DEFINED + 0x10026
+	CKM_IBM_SHA3_384_HMAC              Mechanism = CKM_VENDOR_DEFINED + 0x10027
+	CKM_IBM_SHA3_512_HMAC              Mechanism = CKM_VENDOR_DEFINED + 0x10028
+	CKM_IBM_EC_X25519_RAW              Mechanism = CKM_VENDOR_DEFINED + 0x10029
+	CKM_IBM_EC_X448_RAW                Mechanism = CKM_VENDOR_DEFINED + 0x10030
+	CKM_IBM_ECDSA_OTHER                Mechanism = CKM_VENDOR_DEFINED + 0x10031
 	CKM_IBM_CLEARKEY_TRANSPORT         Mechanism = CKM_VENDOR_DEFINED + 0x20001
 	CKM_IBM_ATTRIBUTEBOUND_WRAP        Mechanism = CKM_VENDOR_DEFINED + 0x20004
 	CKM_IBM_TRANSPORTKEY               Mechanism = CKM_VENDOR_DEFINED + 0x20005
 	CKM_IBM_DH_PKCS_DERIVE_RAW         Mechanism = CKM_VENDOR_DEFINED + 0x20006
 	CKM_IBM_ECDH1_DERIVE_RAW           Mechanism = CKM_VENDOR_DEFINED + 0x20007
+	CKM_IBM_POLY1305                   Mechanism = CKM_VENDOR_DEFINED + 0x20008
+	CKM_IBM_CHACHA20                   Mechanism = CKM_VENDOR_DEFINED + 0x20009
 	CKM_IBM_FILE                       Mechanism = CKM_VENDOR_DEFINED + 0x30003
 	CKM_IBM_WIRETEST                   Mechanism = CKM_VENDOR_DEFINED + 0x30004
 	CKM_IBM_RETAINKEY                  Mechanism = CKM_VENDOR_DEFINED + 0x40001
@@ -590,6 +816,7 @@ const (
 	CKM_IBM_SM2_SM3_RFC                Mechanism = CKM_VENDOR_DEFINED + 0x5000f
 	CKM_IBM_SM4_MAC                    Mechanism = CKM_VENDOR_DEFINED + 0x58007
 	CKM_IBM_ISO2_SM4_MAC               Mechanism = CKM_VENDOR_DEFINED + 0x58008
+	CKM_IBM_BTC_DERIVE                 Mechanism = CKM_VENDOR_DEFINED + 0x70001
 	CKM_IBM_EPX                        Mechanism = CKM_VENDOR_DEFINED + 0x61100000
 	CKM_IBM_EPX_WPRM                   Mechanism = CKM_VENDOR_DEFINED + 0x61110000
 
@@ -747,11 +974,11 @@ const (
 	CKR_MUTEX_NOT_LOCKED                 Return = 0x000001a1
 	CKR_NEW_PIN_MODE                     Return = 0x000001b0
 	CKR_NEXT_OTP                         Return = 0x000001b1
-	CKR_EXCEEDED_MAX_ITERATIONS          Return = 0x000001c0
-	CKR_FIPS_SELF_TEST_FAILED            Return = 0x000001c1
-	CKR_LIBRARY_LOAD_FAILED              Return = 0x000001c2
-	CKR_PIN_TOO_WEAK                     Return = 0x000001c3
-	CKR_PUBLIC_KEY_INVALID               Return = 0x000001c4
+	CKR_EXCEEDED_MAX_ITERATIONS          Return = 0x000001b5
+	CKR_FIPS_SELF_TEST_FAILED            Return = 0x000001b6
+	CKR_LIBRARY_LOAD_FAILED              Return = 0x000001b7
+	CKR_PIN_TOO_WEAK                     Return = 0x000001b8
+	CKR_PUBLIC_KEY_INVALID               Return = 0x000001b9
 	CKR_FUNCTION_REJECTED                Return = 0x00000200
 	CKR_VENDOR_DEFINED                   Return = 0x80000000
 	CKR_IBM_WKID_MISMATCH                Return = CKR_VENDOR_DEFINED + 0x10001
@@ -770,6 +997,9 @@ const (
 	CKR_IBM_EMBED_GENERIC                Return = CKR_VENDOR_DEFINED + 0x1000f
 	CKR_IBM_TRANSPORT_LIMIT              Return = CKR_VENDOR_DEFINED + 0x10010
 	CKR_IBM_FCV_NOT_SET                  Return = CKR_VENDOR_DEFINED + 0x10011
+	CKR_IBM_PERF_CATEGORY_INVALID        Return = CKR_VENDOR_DEFINED + 0x10012
+	CKR_IBM_API_MISMATCH                 Return = CKR_VENDOR_DEFINED + 0x10013
+	CKR_IBM_TARGET_INVALID               Return = CKR_VENDOR_DEFINED + 0x10030
 	CKR_VENDOR_DEFINED_GREP11            Return = CKR_VENDOR_DEFINED + 0x40000
 	CKR_IBM_GREP11_NOT_AUTHENTICATED     Return = CKR_VENDOR_DEFINED_GREP11 + 0x1
 	CKR_IBM_GREP11_CANNOT_UNMARSHAL      Return = CKR_VENDOR_DEFINED_GREP11 + 0x2
@@ -799,253 +1029,673 @@ const (
 )
 
 var (
-	_AttributeNameToValue = map[string]Attribute{
-		"CKA_CLASS":                      CKA_CLASS,
-		"CKA_TOKEN":                      CKA_TOKEN,
-		"CKA_PRIVATE":                    CKA_PRIVATE,
-		"CKA_LABEL":                      CKA_LABEL,
-		"CKA_APPLICATION":                CKA_APPLICATION,
-		"CKA_VALUE":                      CKA_VALUE,
-		"CKA_OBJECT_ID":                  CKA_OBJECT_ID,
-		"CKA_CERTIFICATE_TYPE":           CKA_CERTIFICATE_TYPE,
-		"CKA_ISSUER":                     CKA_ISSUER,
-		"CKA_SERIAL_NUMBER":              CKA_SERIAL_NUMBER,
-		"CKA_AC_ISSUER":                  CKA_AC_ISSUER,
-		"CKA_OWNER":                      CKA_OWNER,
-		"CKA_ATTR_TYPES":                 CKA_ATTR_TYPES,
-		"CKA_TRUSTED":                    CKA_TRUSTED,
-		"CKA_CERTIFICATE_CATEGORY":       CKA_CERTIFICATE_CATEGORY,
-		"CKA_JAVA_MIDP_SECURITY_DOMAIN":  CKA_JAVA_MIDP_SECURITY_DOMAIN,
-		"CKA_URL":                        CKA_URL,
-		"CKA_HASH_OF_SUBJECT_PUBLIC_KEY": CKA_HASH_OF_SUBJECT_PUBLIC_KEY,
-		"CKA_HASH_OF_ISSUER_PUBLIC_KEY":  CKA_HASH_OF_ISSUER_PUBLIC_KEY,
-		"CKA_NAME_HASH_ALGORITHM":        CKA_NAME_HASH_ALGORITHM,
-		"CKA_CHECK_VALUE":                CKA_CHECK_VALUE,
-		"CKA_KEY_TYPE":                   CKA_KEY_TYPE,
-		"CKA_SUBJECT":                    CKA_SUBJECT,
-		"CKA_ID":                         CKA_ID,
-		"CKA_SENSITIVE":                  CKA_SENSITIVE,
-		"CKA_ENCRYPT":                    CKA_ENCRYPT,
-		"CKA_DECRYPT":                    CKA_DECRYPT,
-		"CKA_WRAP":                       CKA_WRAP,
-		"CKA_UNWRAP":                     CKA_UNWRAP,
-		"CKA_SIGN":                       CKA_SIGN,
-		"CKA_SIGN_RECOVER":               CKA_SIGN_RECOVER,
-		"CKA_VERIFY":                     CKA_VERIFY,
-		"CKA_VERIFY_RECOVER":             CKA_VERIFY_RECOVER,
-		"CKA_DERIVE":                     CKA_DERIVE,
-		"CKA_START_DATE":                 CKA_START_DATE,
-		"CKA_END_DATE":                   CKA_END_DATE,
-		"CKA_MODULUS":                    CKA_MODULUS,
-		"CKA_MODULUS_BITS":               CKA_MODULUS_BITS,
-		"CKA_PUBLIC_EXPONENT":            CKA_PUBLIC_EXPONENT,
-		"CKA_PRIVATE_EXPONENT":           CKA_PRIVATE_EXPONENT,
-		"CKA_PRIME_1":                    CKA_PRIME_1,
-		"CKA_PRIME_2":                    CKA_PRIME_2,
-		"CKA_EXPONENT_1":                 CKA_EXPONENT_1,
-		"CKA_EXPONENT_2":                 CKA_EXPONENT_2,
-		"CKA_COEFFICIENT":                CKA_COEFFICIENT,
-		"CKA_PUBLIC_KEY_INFO":            CKA_PUBLIC_KEY_INFO,
-		"CKA_PRIME":                      CKA_PRIME,
-		"CKA_SUBPRIME":                   CKA_SUBPRIME,
-		"CKA_BASE":                       CKA_BASE,
-		"CKA_PRIME_BITS":                 CKA_PRIME_BITS,
-		"CKA_SUBPRIME_BITS":              CKA_SUBPRIME_BITS,
-		"CKA_SUB_PRIME_BITS":             CKA_SUB_PRIME_BITS,
-		"CKA_VALUE_BITS":                 CKA_VALUE_BITS,
-		"CKA_VALUE_LEN":                  CKA_VALUE_LEN,
-		"CKA_EXTRACTABLE":                CKA_EXTRACTABLE,
-		"CKA_LOCAL":                      CKA_LOCAL,
-		"CKA_NEVER_EXTRACTABLE":          CKA_NEVER_EXTRACTABLE,
-		"CKA_ALWAYS_SENSITIVE":           CKA_ALWAYS_SENSITIVE,
-		"CKA_KEY_GEN_MECHANISM":          CKA_KEY_GEN_MECHANISM,
-		"CKA_MODIFIABLE":                 CKA_MODIFIABLE,
-		"CKA_COPYABLE":                   CKA_COPYABLE,
-		"CKA_DESTROYABLE":                CKA_DESTROYABLE,
-		"CKA_ECDSA_PARAMS":               CKA_ECDSA_PARAMS,
-		"CKA_EC_PARAMS":                  CKA_EC_PARAMS,
-		"CKA_EC_POINT":                   CKA_EC_POINT,
-		"CKA_SECONDARY_AUTH":             CKA_SECONDARY_AUTH,
-		"CKA_AUTH_PIN_FLAGS":             CKA_AUTH_PIN_FLAGS,
-		"CKA_ALWAYS_AUTHENTICATE":        CKA_ALWAYS_AUTHENTICATE,
-		"CKA_WRAP_WITH_TRUSTED":          CKA_WRAP_WITH_TRUSTED,
-		"CKA_OTP_FORMAT":                 CKA_OTP_FORMAT,
-		"CKA_OTP_LENGTH":                 CKA_OTP_LENGTH,
-		"CKA_OTP_TIME_INTERVAL":          CKA_OTP_TIME_INTERVAL,
-		"CKA_OTP_USER_FRIENDLY_MODE":     CKA_OTP_USER_FRIENDLY_MODE,
-		"CKA_OTP_CHALLENGE_REQUIREMENT":  CKA_OTP_CHALLENGE_REQUIREMENT,
-		"CKA_OTP_TIME_REQUIREMENT":       CKA_OTP_TIME_REQUIREMENT,
-		"CKA_OTP_COUNTER_REQUIREMENT":    CKA_OTP_COUNTER_REQUIREMENT,
-		"CKA_OTP_PIN_REQUIREMENT":        CKA_OTP_PIN_REQUIREMENT,
-		"CKA_OTP_USER_IDENTIFIER":        CKA_OTP_USER_IDENTIFIER,
-		"CKA_OTP_SERVICE_IDENTIFIER":     CKA_OTP_SERVICE_IDENTIFIER,
-		"CKA_OTP_SERVICE_LOGO":           CKA_OTP_SERVICE_LOGO,
-		"CKA_OTP_SERVICE_LOGO_TYPE":      CKA_OTP_SERVICE_LOGO_TYPE,
-		"CKA_OTP_COUNTER":                CKA_OTP_COUNTER,
-		"CKA_OTP_TIME":                   CKA_OTP_TIME,
-		"CKA_GOSTR3410_PARAMS":           CKA_GOSTR3410_PARAMS,
-		"CKA_GOSTR3411_PARAMS":           CKA_GOSTR3411_PARAMS,
-		"CKA_GOST28147_PARAMS":           CKA_GOST28147_PARAMS,
-		"CKA_HW_FEATURE_TYPE":            CKA_HW_FEATURE_TYPE,
-		"CKA_RESET_ON_INIT":              CKA_RESET_ON_INIT,
-		"CKA_HAS_RESET":                  CKA_HAS_RESET,
-		"CKA_PIXEL_X":                    CKA_PIXEL_X,
-		"CKA_PIXEL_Y":                    CKA_PIXEL_Y,
-		"CKA_RESOLUTION":                 CKA_RESOLUTION,
-		"CKA_CHAR_ROWS":                  CKA_CHAR_ROWS,
-		"CKA_CHAR_COLUMNS":               CKA_CHAR_COLUMNS,
-		"CKA_COLOR":                      CKA_COLOR,
-		"CKA_BITS_PER_PIXEL":             CKA_BITS_PER_PIXEL,
-		"CKA_CHAR_SETS":                  CKA_CHAR_SETS,
-		"CKA_ENCODING_METHODS":           CKA_ENCODING_METHODS,
-		"CKA_MIME_TYPES":                 CKA_MIME_TYPES,
-		"CKA_MECHANISM_TYPE":             CKA_MECHANISM_TYPE,
-		"CKA_REQUIRED_CMS_ATTRIBUTES":    CKA_REQUIRED_CMS_ATTRIBUTES,
-		"CKA_DEFAULT_CMS_ATTRIBUTES":     CKA_DEFAULT_CMS_ATTRIBUTES,
-		"CKA_SUPPORTED_CMS_ATTRIBUTES":   CKA_SUPPORTED_CMS_ATTRIBUTES,
-		"CKA_WRAP_TEMPLATE":              CKA_WRAP_TEMPLATE,
-		"CKA_UNWRAP_TEMPLATE":            CKA_UNWRAP_TEMPLATE,
-		"CKA_ALLOWED_MECHANISMS":         CKA_ALLOWED_MECHANISMS,
-		"CKA_VENDOR_DEFINED":             CKA_VENDOR_DEFINED,
-		"CKA_IBM_RESTRICTABLE":           CKA_IBM_RESTRICTABLE,
-		"CKA_IBM_NEVER_MODIFIABLE":       CKA_IBM_NEVER_MODIFIABLE,
-		"CKA_IBM_RETAINKEY":              CKA_IBM_RETAINKEY,
-		"CKA_IBM_ATTRBOUND":              CKA_IBM_ATTRBOUND,
-		"CKA_IBM_KEYTYPE":                CKA_IBM_KEYTYPE,
-		"CKA_IBM_CV":                     CKA_IBM_CV,
-		"CKA_IBM_MACKEY":                 CKA_IBM_MACKEY,
-		"CKA_IBM_USE_AS_DATA":            CKA_IBM_USE_AS_DATA,
-		"CKA_IBM_STRUCT_PARAMS":          CKA_IBM_STRUCT_PARAMS,
-		"CKA_IBM_STD_COMPLIANCE1":        CKA_IBM_STD_COMPLIANCE1,
-		"CKA_IBM_MLS_TYPE":               CKA_IBM_MLS_TYPE,
-		"CKA_IBM_WIRETEST":               CKA_IBM_WIRETEST,
-		"CKA_VENDOR_DEFINED_GREP11":      CKA_VENDOR_DEFINED_GREP11,
-		"CKA_GREP11_RAW_KEYBLOB":         CKA_GREP11_RAW_KEYBLOB,
-		"CKA_IBM_EPX":                    CKA_IBM_EPX,
+	AdminCommandNameToValue = map[string]AdminCommand{
+		"XCP_ADM_ADMIN_LOGIN":         XCP_ADM_ADMIN_LOGIN,
+		"XCP_ADM_DOM_ADMIN_LOGIN":     XCP_ADM_DOM_ADMIN_LOGIN,
+		"XCP_ADM_ADMIN_LOGOUT":        XCP_ADM_ADMIN_LOGOUT,
+		"XCP_ADM_DOM_ADMIN_LOGOUT":    XCP_ADM_DOM_ADMIN_LOGOUT,
+		"XCP_ADM_ADMIN_REPLACE":       XCP_ADM_ADMIN_REPLACE,
+		"XCP_ADM_DOM_ADMIN_REPLACE":   XCP_ADM_DOM_ADMIN_REPLACE,
+		"XCP_ADM_SET_ATTR":            XCP_ADM_SET_ATTR,
+		"XCP_ADM_DOM_SET_ATTR":        XCP_ADM_DOM_SET_ATTR,
+		"XCP_ADM_GEN_DOM_IMPORTER":    XCP_ADM_GEN_DOM_IMPORTER,
+		"XCP_ADM_GEN_WK":              XCP_ADM_GEN_WK,
+		"XCP_ADM_EXPORT_WK":           XCP_ADM_EXPORT_WK,
+		"XCP_ADM_IMPORT_WK":           XCP_ADM_IMPORT_WK,
+		"XCP_ADM_COMMIT_WK":           XCP_ADM_COMMIT_WK,
+		"XCP_ADM_FINALIZE_WK":         XCP_ADM_FINALIZE_WK,
+		"XCP_ADM_ZEROIZE":             XCP_ADM_ZEROIZE,
+		"XCP_ADM_DOM_ZEROIZE":         XCP_ADM_DOM_ZEROIZE,
+		"XCP_ADM_DOM_CTRLPOINT_SET":   XCP_ADM_DOM_CTRLPOINT_SET,
+		"XCP_ADM_DOM_CTRLPOINT_ADD":   XCP_ADM_DOM_CTRLPOINT_ADD,
+		"XCP_ADM_DOM_CTRLPOINT_DEL":   XCP_ADM_DOM_CTRLPOINT_DEL,
+		"XCP_ADM_SET_CLOCK":           XCP_ADM_SET_CLOCK,
+		"XCP_ADM_SET_FCV":             XCP_ADM_SET_FCV,
+		"XCP_ADM_CTRLPOINT_SET":       XCP_ADM_CTRLPOINT_SET,
+		"XCP_ADM_CTRLPOINT_ADD":       XCP_ADM_CTRLPOINT_ADD,
+		"XCP_ADM_CTRLPOINT_DEL":       XCP_ADM_CTRLPOINT_DEL,
+		"XCP_ADM_REENCRYPT":           XCP_ADM_REENCRYPT,
+		"XCP_ADM_RK_REMOVE":           XCP_ADM_RK_REMOVE,
+		"XCP_ADM_CLEAR_WK":            XCP_ADM_CLEAR_WK,
+		"XCP_ADM_CLEAR_NEXT_WK":       XCP_ADM_CLEAR_NEXT_WK,
+		"XCP_ADM_SYSTEM_ZEROIZE":      XCP_ADM_SYSTEM_ZEROIZE,
+		"XCP_ADM_EXPORT_STATE":        XCP_ADM_EXPORT_STATE,
+		"XCP_ADM_IMPORT_STATE":        XCP_ADM_IMPORT_STATE,
+		"XCP_ADM_COMMIT_STATE":        XCP_ADM_COMMIT_STATE,
+		"XCP_ADM_REMOVE_STATE":        XCP_ADM_REMOVE_STATE,
+		"XCP_ADM_GEN_MODULE_IMPORTER": XCP_ADM_GEN_MODULE_IMPORTER,
+		"XCP_ADM_SET_TRUSTED":         XCP_ADM_SET_TRUSTED,
+		"XCP_ADM_DOMAINS_ZEROIZE":     XCP_ADM_DOMAINS_ZEROIZE,
+		"XCP_ADM_SESSION_REMOVE":      XCP_ADM_SESSION_REMOVE,
+		"XCP_ADM_EXPORT_NEXT_WK":      XCP_ADM_EXPORT_NEXT_WK,
+		"XCP_ADMQ_ADMIN":              XCP_ADMQ_ADMIN,
+		"XCP_ADMQ_DOMADMIN":           XCP_ADMQ_DOMADMIN,
+		"XCP_ADMQ_DEVICE_CERT":        XCP_ADMQ_DEVICE_CERT,
+		"XCP_ADMQ_DOM_IMPORTER_CERT":  XCP_ADMQ_DOM_IMPORTER_CERT,
+		"XCP_ADMQ_CTRLPOINTS":         XCP_ADMQ_CTRLPOINTS,
+		"XCP_ADMQ_DOM_CTRLPOINTS":     XCP_ADMQ_DOM_CTRLPOINTS,
+		"XCP_ADMQ_WK":                 XCP_ADMQ_WK,
+		"XCP_ADMQ_NEXT_WK":            XCP_ADMQ_NEXT_WK,
+		"XCP_ADMQ_ATTRS":              XCP_ADMQ_ATTRS,
+		"XCP_ADMQ_DOM_ATTRS":          XCP_ADMQ_DOM_ATTRS,
+		"XCP_ADMQ_FCV":                XCP_ADMQ_FCV,
+		"XCP_ADMQ_WK_ORIGINS":         XCP_ADMQ_WK_ORIGINS,
+		"XCP_ADMQ_RKLIST":             XCP_ADMQ_RKLIST,
+		"XCP_ADMQ_INTERNAL_STATE":     XCP_ADMQ_INTERNAL_STATE,
+		"XCP_ADMQ_IMPORTER_CERT":      XCP_ADMQ_IMPORTER_CERT,
+		"XCP_ADMQ_AUDIT_STATE":        XCP_ADMQ_AUDIT_STATE,
 	}
-	_AttributeValueToName = map[Attribute]string{
-		CKA_CLASS:                      "CKA_CLASS",
-		CKA_TOKEN:                      "CKA_TOKEN",
-		CKA_PRIVATE:                    "CKA_PRIVATE",
-		CKA_LABEL:                      "CKA_LABEL",
-		CKA_APPLICATION:                "CKA_APPLICATION",
-		CKA_VALUE:                      "CKA_VALUE",
-		CKA_OBJECT_ID:                  "CKA_OBJECT_ID",
-		CKA_CERTIFICATE_TYPE:           "CKA_CERTIFICATE_TYPE",
-		CKA_ISSUER:                     "CKA_ISSUER",
-		CKA_SERIAL_NUMBER:              "CKA_SERIAL_NUMBER",
-		CKA_AC_ISSUER:                  "CKA_AC_ISSUER",
-		CKA_OWNER:                      "CKA_OWNER",
-		CKA_ATTR_TYPES:                 "CKA_ATTR_TYPES",
-		CKA_TRUSTED:                    "CKA_TRUSTED",
-		CKA_CERTIFICATE_CATEGORY:       "CKA_CERTIFICATE_CATEGORY",
-		CKA_JAVA_MIDP_SECURITY_DOMAIN:  "CKA_JAVA_MIDP_SECURITY_DOMAIN",
-		CKA_URL:                        "CKA_URL",
-		CKA_HASH_OF_SUBJECT_PUBLIC_KEY: "CKA_HASH_OF_SUBJECT_PUBLIC_KEY",
-		CKA_HASH_OF_ISSUER_PUBLIC_KEY:  "CKA_HASH_OF_ISSUER_PUBLIC_KEY",
-		CKA_NAME_HASH_ALGORITHM:        "CKA_NAME_HASH_ALGORITHM",
-		CKA_CHECK_VALUE:                "CKA_CHECK_VALUE",
-		CKA_KEY_TYPE:                   "CKA_KEY_TYPE",
-		CKA_SUBJECT:                    "CKA_SUBJECT",
-		CKA_ID:                         "CKA_ID",
-		CKA_SENSITIVE:                  "CKA_SENSITIVE",
-		CKA_ENCRYPT:                    "CKA_ENCRYPT",
-		CKA_DECRYPT:                    "CKA_DECRYPT",
-		CKA_WRAP:                       "CKA_WRAP",
-		CKA_UNWRAP:                     "CKA_UNWRAP",
-		CKA_SIGN:                       "CKA_SIGN",
-		CKA_SIGN_RECOVER:               "CKA_SIGN_RECOVER",
-		CKA_VERIFY:                     "CKA_VERIFY",
-		CKA_VERIFY_RECOVER:             "CKA_VERIFY_RECOVER",
-		CKA_DERIVE:                     "CKA_DERIVE",
-		CKA_START_DATE:                 "CKA_START_DATE",
-		CKA_END_DATE:                   "CKA_END_DATE",
-		CKA_MODULUS:                    "CKA_MODULUS",
-		CKA_MODULUS_BITS:               "CKA_MODULUS_BITS",
-		CKA_PUBLIC_EXPONENT:            "CKA_PUBLIC_EXPONENT",
-		CKA_PRIVATE_EXPONENT:           "CKA_PRIVATE_EXPONENT",
-		CKA_PRIME_1:                    "CKA_PRIME_1",
-		CKA_PRIME_2:                    "CKA_PRIME_2",
-		CKA_EXPONENT_1:                 "CKA_EXPONENT_1",
-		CKA_EXPONENT_2:                 "CKA_EXPONENT_2",
-		CKA_COEFFICIENT:                "CKA_COEFFICIENT",
-		CKA_PUBLIC_KEY_INFO:            "CKA_PUBLIC_KEY_INFO",
-		CKA_PRIME:                      "CKA_PRIME",
-		CKA_SUBPRIME:                   "CKA_SUBPRIME",
-		CKA_BASE:                       "CKA_BASE",
-		CKA_PRIME_BITS:                 "CKA_PRIME_BITS",
-		CKA_SUBPRIME_BITS:              "CKA_SUBPRIME_BITS",
-		CKA_VALUE_BITS:                 "CKA_VALUE_BITS",
-		CKA_VALUE_LEN:                  "CKA_VALUE_LEN",
-		CKA_EXTRACTABLE:                "CKA_EXTRACTABLE",
-		CKA_LOCAL:                      "CKA_LOCAL",
-		CKA_NEVER_EXTRACTABLE:          "CKA_NEVER_EXTRACTABLE",
-		CKA_ALWAYS_SENSITIVE:           "CKA_ALWAYS_SENSITIVE",
-		CKA_KEY_GEN_MECHANISM:          "CKA_KEY_GEN_MECHANISM",
-		CKA_MODIFIABLE:                 "CKA_MODIFIABLE",
-		CKA_COPYABLE:                   "CKA_COPYABLE",
-		CKA_DESTROYABLE:                "CKA_DESTROYABLE",
-		CKA_EC_PARAMS:                  "CKA_EC_PARAMS",
-		CKA_EC_POINT:                   "CKA_EC_POINT",
-		CKA_SECONDARY_AUTH:             "CKA_SECONDARY_AUTH",
-		CKA_AUTH_PIN_FLAGS:             "CKA_AUTH_PIN_FLAGS",
-		CKA_ALWAYS_AUTHENTICATE:        "CKA_ALWAYS_AUTHENTICATE",
-		CKA_WRAP_WITH_TRUSTED:          "CKA_WRAP_WITH_TRUSTED",
-		CKA_OTP_FORMAT:                 "CKA_OTP_FORMAT",
-		CKA_OTP_LENGTH:                 "CKA_OTP_LENGTH",
-		CKA_OTP_TIME_INTERVAL:          "CKA_OTP_TIME_INTERVAL",
-		CKA_OTP_USER_FRIENDLY_MODE:     "CKA_OTP_USER_FRIENDLY_MODE",
-		CKA_OTP_CHALLENGE_REQUIREMENT:  "CKA_OTP_CHALLENGE_REQUIREMENT",
-		CKA_OTP_TIME_REQUIREMENT:       "CKA_OTP_TIME_REQUIREMENT",
-		CKA_OTP_COUNTER_REQUIREMENT:    "CKA_OTP_COUNTER_REQUIREMENT",
-		CKA_OTP_PIN_REQUIREMENT:        "CKA_OTP_PIN_REQUIREMENT",
-		CKA_OTP_USER_IDENTIFIER:        "CKA_OTP_USER_IDENTIFIER",
-		CKA_OTP_SERVICE_IDENTIFIER:     "CKA_OTP_SERVICE_IDENTIFIER",
-		CKA_OTP_SERVICE_LOGO:           "CKA_OTP_SERVICE_LOGO",
-		CKA_OTP_SERVICE_LOGO_TYPE:      "CKA_OTP_SERVICE_LOGO_TYPE",
-		CKA_OTP_COUNTER:                "CKA_OTP_COUNTER",
-		CKA_OTP_TIME:                   "CKA_OTP_TIME",
-		CKA_GOSTR3410_PARAMS:           "CKA_GOSTR3410_PARAMS",
-		CKA_GOSTR3411_PARAMS:           "CKA_GOSTR3411_PARAMS",
-		CKA_GOST28147_PARAMS:           "CKA_GOST28147_PARAMS",
-		CKA_HW_FEATURE_TYPE:            "CKA_HW_FEATURE_TYPE",
-		CKA_RESET_ON_INIT:              "CKA_RESET_ON_INIT",
-		CKA_HAS_RESET:                  "CKA_HAS_RESET",
-		CKA_PIXEL_X:                    "CKA_PIXEL_X",
-		CKA_PIXEL_Y:                    "CKA_PIXEL_Y",
-		CKA_RESOLUTION:                 "CKA_RESOLUTION",
-		CKA_CHAR_ROWS:                  "CKA_CHAR_ROWS",
-		CKA_CHAR_COLUMNS:               "CKA_CHAR_COLUMNS",
-		CKA_COLOR:                      "CKA_COLOR",
-		CKA_BITS_PER_PIXEL:             "CKA_BITS_PER_PIXEL",
-		CKA_CHAR_SETS:                  "CKA_CHAR_SETS",
-		CKA_ENCODING_METHODS:           "CKA_ENCODING_METHODS",
-		CKA_MIME_TYPES:                 "CKA_MIME_TYPES",
-		CKA_MECHANISM_TYPE:             "CKA_MECHANISM_TYPE",
-		CKA_REQUIRED_CMS_ATTRIBUTES:    "CKA_REQUIRED_CMS_ATTRIBUTES",
-		CKA_DEFAULT_CMS_ATTRIBUTES:     "CKA_DEFAULT_CMS_ATTRIBUTES",
-		CKA_SUPPORTED_CMS_ATTRIBUTES:   "CKA_SUPPORTED_CMS_ATTRIBUTES",
-		CKA_WRAP_TEMPLATE:              "CKA_WRAP_TEMPLATE",
-		CKA_UNWRAP_TEMPLATE:            "CKA_UNWRAP_TEMPLATE",
-		CKA_ALLOWED_MECHANISMS:         "CKA_ALLOWED_MECHANISMS",
-		CKA_VENDOR_DEFINED:             "CKA_VENDOR_DEFINED",
-		CKA_IBM_RESTRICTABLE:           "CKA_IBM_RESTRICTABLE",
-		CKA_IBM_NEVER_MODIFIABLE:       "CKA_IBM_NEVER_MODIFIABLE",
-		CKA_IBM_RETAINKEY:              "CKA_IBM_RETAINKEY",
-		CKA_IBM_ATTRBOUND:              "CKA_IBM_ATTRBOUND",
-		CKA_IBM_KEYTYPE:                "CKA_IBM_KEYTYPE",
-		CKA_IBM_CV:                     "CKA_IBM_CV",
-		CKA_IBM_MACKEY:                 "CKA_IBM_MACKEY",
-		CKA_IBM_USE_AS_DATA:            "CKA_IBM_USE_AS_DATA",
-		CKA_IBM_STRUCT_PARAMS:          "CKA_IBM_STRUCT_PARAMS",
-		CKA_IBM_STD_COMPLIANCE1:        "CKA_IBM_STD_COMPLIANCE1",
-		CKA_IBM_MLS_TYPE:               "CKA_IBM_MLS_TYPE",
-		CKA_IBM_WIRETEST:               "CKA_IBM_WIRETEST",
-		CKA_VENDOR_DEFINED_GREP11:      "CKA_VENDOR_DEFINED_GREP11",
-		CKA_GREP11_RAW_KEYBLOB:         "CKA_GREP11_RAW_KEYBLOB",
-		CKA_IBM_EPX:                    "CKA_IBM_EPX",
+	AdminCommandValueToName = map[AdminCommand]string{
+		XCP_ADM_ADMIN_LOGIN:         "XCP_ADM_ADMIN_LOGIN",
+		XCP_ADM_DOM_ADMIN_LOGIN:     "XCP_ADM_DOM_ADMIN_LOGIN",
+		XCP_ADM_ADMIN_LOGOUT:        "XCP_ADM_ADMIN_LOGOUT",
+		XCP_ADM_DOM_ADMIN_LOGOUT:    "XCP_ADM_DOM_ADMIN_LOGOUT",
+		XCP_ADM_ADMIN_REPLACE:       "XCP_ADM_ADMIN_REPLACE",
+		XCP_ADM_DOM_ADMIN_REPLACE:   "XCP_ADM_DOM_ADMIN_REPLACE",
+		XCP_ADM_SET_ATTR:            "XCP_ADM_SET_ATTR",
+		XCP_ADM_DOM_SET_ATTR:        "XCP_ADM_DOM_SET_ATTR",
+		XCP_ADM_GEN_DOM_IMPORTER:    "XCP_ADM_GEN_DOM_IMPORTER",
+		XCP_ADM_GEN_WK:              "XCP_ADM_GEN_WK",
+		XCP_ADM_EXPORT_WK:           "XCP_ADM_EXPORT_WK",
+		XCP_ADM_IMPORT_WK:           "XCP_ADM_IMPORT_WK",
+		XCP_ADM_COMMIT_WK:           "XCP_ADM_COMMIT_WK",
+		XCP_ADM_FINALIZE_WK:         "XCP_ADM_FINALIZE_WK",
+		XCP_ADM_ZEROIZE:             "XCP_ADM_ZEROIZE",
+		XCP_ADM_DOM_ZEROIZE:         "XCP_ADM_DOM_ZEROIZE",
+		XCP_ADM_DOM_CTRLPOINT_SET:   "XCP_ADM_DOM_CTRLPOINT_SET",
+		XCP_ADM_DOM_CTRLPOINT_ADD:   "XCP_ADM_DOM_CTRLPOINT_ADD",
+		XCP_ADM_DOM_CTRLPOINT_DEL:   "XCP_ADM_DOM_CTRLPOINT_DEL",
+		XCP_ADM_SET_CLOCK:           "XCP_ADM_SET_CLOCK",
+		XCP_ADM_SET_FCV:             "XCP_ADM_SET_FCV",
+		XCP_ADM_CTRLPOINT_SET:       "XCP_ADM_CTRLPOINT_SET",
+		XCP_ADM_CTRLPOINT_ADD:       "XCP_ADM_CTRLPOINT_ADD",
+		XCP_ADM_CTRLPOINT_DEL:       "XCP_ADM_CTRLPOINT_DEL",
+		XCP_ADM_REENCRYPT:           "XCP_ADM_REENCRYPT",
+		XCP_ADM_RK_REMOVE:           "XCP_ADM_RK_REMOVE",
+		XCP_ADM_CLEAR_WK:            "XCP_ADM_CLEAR_WK",
+		XCP_ADM_CLEAR_NEXT_WK:       "XCP_ADM_CLEAR_NEXT_WK",
+		XCP_ADM_SYSTEM_ZEROIZE:      "XCP_ADM_SYSTEM_ZEROIZE",
+		XCP_ADM_EXPORT_STATE:        "XCP_ADM_EXPORT_STATE",
+		XCP_ADM_IMPORT_STATE:        "XCP_ADM_IMPORT_STATE",
+		XCP_ADM_COMMIT_STATE:        "XCP_ADM_COMMIT_STATE",
+		XCP_ADM_REMOVE_STATE:        "XCP_ADM_REMOVE_STATE",
+		XCP_ADM_GEN_MODULE_IMPORTER: "XCP_ADM_GEN_MODULE_IMPORTER",
+		XCP_ADM_SET_TRUSTED:         "XCP_ADM_SET_TRUSTED",
+		XCP_ADM_DOMAINS_ZEROIZE:     "XCP_ADM_DOMAINS_ZEROIZE",
+		XCP_ADM_SESSION_REMOVE:      "XCP_ADM_SESSION_REMOVE",
+		XCP_ADM_EXPORT_NEXT_WK:      "XCP_ADM_EXPORT_NEXT_WK",
+		XCP_ADMQ_ADMIN:              "XCP_ADMQ_ADMIN",
+		XCP_ADMQ_DOMADMIN:           "XCP_ADMQ_DOMADMIN",
+		XCP_ADMQ_DEVICE_CERT:        "XCP_ADMQ_DEVICE_CERT",
+		XCP_ADMQ_DOM_IMPORTER_CERT:  "XCP_ADMQ_DOM_IMPORTER_CERT",
+		XCP_ADMQ_CTRLPOINTS:         "XCP_ADMQ_CTRLPOINTS",
+		XCP_ADMQ_DOM_CTRLPOINTS:     "XCP_ADMQ_DOM_CTRLPOINTS",
+		XCP_ADMQ_WK:                 "XCP_ADMQ_WK",
+		XCP_ADMQ_NEXT_WK:            "XCP_ADMQ_NEXT_WK",
+		XCP_ADMQ_ATTRS:              "XCP_ADMQ_ATTRS",
+		XCP_ADMQ_DOM_ATTRS:          "XCP_ADMQ_DOM_ATTRS",
+		XCP_ADMQ_FCV:                "XCP_ADMQ_FCV",
+		XCP_ADMQ_WK_ORIGINS:         "XCP_ADMQ_WK_ORIGINS",
+		XCP_ADMQ_RKLIST:             "XCP_ADMQ_RKLIST",
+		XCP_ADMQ_INTERNAL_STATE:     "XCP_ADMQ_INTERNAL_STATE",
+		XCP_ADMQ_IMPORTER_CERT:      "XCP_ADMQ_IMPORTER_CERT",
+		XCP_ADMQ_AUDIT_STATE:        "XCP_ADMQ_AUDIT_STATE",
 	}
-	_KeyTypeNameToValue = map[string]KeyType{
+	AttributeNameToValue = map[string]Attribute{
+		"CKA_CLASS":                         CKA_CLASS,
+		"CKA_TOKEN":                         CKA_TOKEN,
+		"CKA_PRIVATE":                       CKA_PRIVATE,
+		"CKA_LABEL":                         CKA_LABEL,
+		"CKA_APPLICATION":                   CKA_APPLICATION,
+		"CKA_VALUE":                         CKA_VALUE,
+		"CKA_OBJECT_ID":                     CKA_OBJECT_ID,
+		"CKA_CERTIFICATE_TYPE":              CKA_CERTIFICATE_TYPE,
+		"CKA_ISSUER":                        CKA_ISSUER,
+		"CKA_SERIAL_NUMBER":                 CKA_SERIAL_NUMBER,
+		"CKA_AC_ISSUER":                     CKA_AC_ISSUER,
+		"CKA_OWNER":                         CKA_OWNER,
+		"CKA_ATTR_TYPES":                    CKA_ATTR_TYPES,
+		"CKA_TRUSTED":                       CKA_TRUSTED,
+		"CKA_CERTIFICATE_CATEGORY":          CKA_CERTIFICATE_CATEGORY,
+		"CKA_JAVA_MIDP_SECURITY_DOMAIN":     CKA_JAVA_MIDP_SECURITY_DOMAIN,
+		"CKA_URL":                           CKA_URL,
+		"CKA_HASH_OF_SUBJECT_PUBLIC_KEY":    CKA_HASH_OF_SUBJECT_PUBLIC_KEY,
+		"CKA_HASH_OF_ISSUER_PUBLIC_KEY":     CKA_HASH_OF_ISSUER_PUBLIC_KEY,
+		"CKA_NAME_HASH_ALGORITHM":           CKA_NAME_HASH_ALGORITHM,
+		"CKA_CHECK_VALUE":                   CKA_CHECK_VALUE,
+		"CKA_KEY_TYPE":                      CKA_KEY_TYPE,
+		"CKA_SUBJECT":                       CKA_SUBJECT,
+		"CKA_ID":                            CKA_ID,
+		"CKA_SENSITIVE":                     CKA_SENSITIVE,
+		"CKA_ENCRYPT":                       CKA_ENCRYPT,
+		"CKA_DECRYPT":                       CKA_DECRYPT,
+		"CKA_WRAP":                          CKA_WRAP,
+		"CKA_UNWRAP":                        CKA_UNWRAP,
+		"CKA_SIGN":                          CKA_SIGN,
+		"CKA_SIGN_RECOVER":                  CKA_SIGN_RECOVER,
+		"CKA_VERIFY":                        CKA_VERIFY,
+		"CKA_VERIFY_RECOVER":                CKA_VERIFY_RECOVER,
+		"CKA_DERIVE":                        CKA_DERIVE,
+		"CKA_START_DATE":                    CKA_START_DATE,
+		"CKA_END_DATE":                      CKA_END_DATE,
+		"CKA_MODULUS":                       CKA_MODULUS,
+		"CKA_MODULUS_BITS":                  CKA_MODULUS_BITS,
+		"CKA_PUBLIC_EXPONENT":               CKA_PUBLIC_EXPONENT,
+		"CKA_PRIVATE_EXPONENT":              CKA_PRIVATE_EXPONENT,
+		"CKA_PRIME_1":                       CKA_PRIME_1,
+		"CKA_PRIME_2":                       CKA_PRIME_2,
+		"CKA_EXPONENT_1":                    CKA_EXPONENT_1,
+		"CKA_EXPONENT_2":                    CKA_EXPONENT_2,
+		"CKA_COEFFICIENT":                   CKA_COEFFICIENT,
+		"CKA_PUBLIC_KEY_INFO":               CKA_PUBLIC_KEY_INFO,
+		"CKA_PRIME":                         CKA_PRIME,
+		"CKA_SUBPRIME":                      CKA_SUBPRIME,
+		"CKA_BASE":                          CKA_BASE,
+		"CKA_PRIME_BITS":                    CKA_PRIME_BITS,
+		"CKA_SUBPRIME_BITS":                 CKA_SUBPRIME_BITS,
+		"CKA_SUB_PRIME_BITS":                CKA_SUB_PRIME_BITS,
+		"CKA_VALUE_BITS":                    CKA_VALUE_BITS,
+		"CKA_VALUE_LEN":                     CKA_VALUE_LEN,
+		"CKA_EXTRACTABLE":                   CKA_EXTRACTABLE,
+		"CKA_LOCAL":                         CKA_LOCAL,
+		"CKA_NEVER_EXTRACTABLE":             CKA_NEVER_EXTRACTABLE,
+		"CKA_ALWAYS_SENSITIVE":              CKA_ALWAYS_SENSITIVE,
+		"CKA_KEY_GEN_MECHANISM":             CKA_KEY_GEN_MECHANISM,
+		"CKA_MODIFIABLE":                    CKA_MODIFIABLE,
+		"CKA_COPYABLE":                      CKA_COPYABLE,
+		"CKA_DESTROYABLE":                   CKA_DESTROYABLE,
+		"CKA_ECDSA_PARAMS":                  CKA_ECDSA_PARAMS,
+		"CKA_EC_PARAMS":                     CKA_EC_PARAMS,
+		"CKA_EC_POINT":                      CKA_EC_POINT,
+		"CKA_SECONDARY_AUTH":                CKA_SECONDARY_AUTH,
+		"CKA_AUTH_PIN_FLAGS":                CKA_AUTH_PIN_FLAGS,
+		"CKA_ALWAYS_AUTHENTICATE":           CKA_ALWAYS_AUTHENTICATE,
+		"CKA_WRAP_WITH_TRUSTED":             CKA_WRAP_WITH_TRUSTED,
+		"CKA_OTP_FORMAT":                    CKA_OTP_FORMAT,
+		"CKA_OTP_LENGTH":                    CKA_OTP_LENGTH,
+		"CKA_OTP_TIME_INTERVAL":             CKA_OTP_TIME_INTERVAL,
+		"CKA_OTP_USER_FRIENDLY_MODE":        CKA_OTP_USER_FRIENDLY_MODE,
+		"CKA_OTP_CHALLENGE_REQUIREMENT":     CKA_OTP_CHALLENGE_REQUIREMENT,
+		"CKA_OTP_TIME_REQUIREMENT":          CKA_OTP_TIME_REQUIREMENT,
+		"CKA_OTP_COUNTER_REQUIREMENT":       CKA_OTP_COUNTER_REQUIREMENT,
+		"CKA_OTP_PIN_REQUIREMENT":           CKA_OTP_PIN_REQUIREMENT,
+		"CKA_OTP_USER_IDENTIFIER":           CKA_OTP_USER_IDENTIFIER,
+		"CKA_OTP_SERVICE_IDENTIFIER":        CKA_OTP_SERVICE_IDENTIFIER,
+		"CKA_OTP_SERVICE_LOGO":              CKA_OTP_SERVICE_LOGO,
+		"CKA_OTP_SERVICE_LOGO_TYPE":         CKA_OTP_SERVICE_LOGO_TYPE,
+		"CKA_OTP_COUNTER":                   CKA_OTP_COUNTER,
+		"CKA_OTP_TIME":                      CKA_OTP_TIME,
+		"CKA_GOSTR3410_PARAMS":              CKA_GOSTR3410_PARAMS,
+		"CKA_GOSTR3411_PARAMS":              CKA_GOSTR3411_PARAMS,
+		"CKA_GOST28147_PARAMS":              CKA_GOST28147_PARAMS,
+		"CKA_HW_FEATURE_TYPE":               CKA_HW_FEATURE_TYPE,
+		"CKA_RESET_ON_INIT":                 CKA_RESET_ON_INIT,
+		"CKA_HAS_RESET":                     CKA_HAS_RESET,
+		"CKA_PIXEL_X":                       CKA_PIXEL_X,
+		"CKA_PIXEL_Y":                       CKA_PIXEL_Y,
+		"CKA_RESOLUTION":                    CKA_RESOLUTION,
+		"CKA_CHAR_ROWS":                     CKA_CHAR_ROWS,
+		"CKA_CHAR_COLUMNS":                  CKA_CHAR_COLUMNS,
+		"CKA_COLOR":                         CKA_COLOR,
+		"CKA_BITS_PER_PIXEL":                CKA_BITS_PER_PIXEL,
+		"CKA_CHAR_SETS":                     CKA_CHAR_SETS,
+		"CKA_ENCODING_METHODS":              CKA_ENCODING_METHODS,
+		"CKA_MIME_TYPES":                    CKA_MIME_TYPES,
+		"CKA_MECHANISM_TYPE":                CKA_MECHANISM_TYPE,
+		"CKA_REQUIRED_CMS_ATTRIBUTES":       CKA_REQUIRED_CMS_ATTRIBUTES,
+		"CKA_DEFAULT_CMS_ATTRIBUTES":        CKA_DEFAULT_CMS_ATTRIBUTES,
+		"CKA_SUPPORTED_CMS_ATTRIBUTES":      CKA_SUPPORTED_CMS_ATTRIBUTES,
+		"CKA_WRAP_TEMPLATE":                 CKA_WRAP_TEMPLATE,
+		"CKA_UNWRAP_TEMPLATE":               CKA_UNWRAP_TEMPLATE,
+		"CKA_DERIVE_TEMPLATE":               CKA_DERIVE_TEMPLATE,
+		"CKA_ALLOWED_MECHANISMS":            CKA_ALLOWED_MECHANISMS,
+		"CKA_VENDOR_DEFINED":                CKA_VENDOR_DEFINED,
+		"CKA_IBM_RESTRICTABLE":              CKA_IBM_RESTRICTABLE,
+		"CKA_IBM_NEVER_MODIFIABLE":          CKA_IBM_NEVER_MODIFIABLE,
+		"CKA_IBM_RETAINKEY":                 CKA_IBM_RETAINKEY,
+		"CKA_IBM_ATTRBOUND":                 CKA_IBM_ATTRBOUND,
+		"CKA_IBM_KEYTYPE":                   CKA_IBM_KEYTYPE,
+		"CKA_IBM_CV":                        CKA_IBM_CV,
+		"CKA_IBM_MACKEY":                    CKA_IBM_MACKEY,
+		"CKA_IBM_USE_AS_DATA":               CKA_IBM_USE_AS_DATA,
+		"CKA_IBM_STRUCT_PARAMS":             CKA_IBM_STRUCT_PARAMS,
+		"CKA_IBM_STD_COMPLIANCE1":           CKA_IBM_STD_COMPLIANCE1,
+		"CKA_IBM_MLS_TYPE":                  CKA_IBM_MLS_TYPE,
+		"CKA_IBM_PROTKEY_EXTRACTABLE":       CKA_IBM_PROTKEY_EXTRACTABLE,
+		"CKA_IBM_PROTKEY_NEVER_EXTRACTABLE": CKA_IBM_PROTKEY_NEVER_EXTRACTABLE,
+		"CKA_IBM_WIRETEST":                  CKA_IBM_WIRETEST,
+		"CKA_VENDOR_DEFINED_GREP11":         CKA_VENDOR_DEFINED_GREP11,
+		"CKA_GREP11_TOKEN_LABEL":            CKA_GREP11_TOKEN_LABEL,
+		"CKA_GREP11_RAW_KEYBLOB":            CKA_GREP11_RAW_KEYBLOB,
+		"CKA_GREP11_VOTE_VERSION":           CKA_GREP11_VOTE_VERSION,
+		"CKA_IBM_EPX":                       CKA_IBM_EPX,
+	}
+	AttributeValueToName = map[Attribute]string{
+		CKA_CLASS:                         "CKA_CLASS",
+		CKA_TOKEN:                         "CKA_TOKEN",
+		CKA_PRIVATE:                       "CKA_PRIVATE",
+		CKA_LABEL:                         "CKA_LABEL",
+		CKA_APPLICATION:                   "CKA_APPLICATION",
+		CKA_VALUE:                         "CKA_VALUE",
+		CKA_OBJECT_ID:                     "CKA_OBJECT_ID",
+		CKA_CERTIFICATE_TYPE:              "CKA_CERTIFICATE_TYPE",
+		CKA_ISSUER:                        "CKA_ISSUER",
+		CKA_SERIAL_NUMBER:                 "CKA_SERIAL_NUMBER",
+		CKA_AC_ISSUER:                     "CKA_AC_ISSUER",
+		CKA_OWNER:                         "CKA_OWNER",
+		CKA_ATTR_TYPES:                    "CKA_ATTR_TYPES",
+		CKA_TRUSTED:                       "CKA_TRUSTED",
+		CKA_CERTIFICATE_CATEGORY:          "CKA_CERTIFICATE_CATEGORY",
+		CKA_JAVA_MIDP_SECURITY_DOMAIN:     "CKA_JAVA_MIDP_SECURITY_DOMAIN",
+		CKA_URL:                           "CKA_URL",
+		CKA_HASH_OF_SUBJECT_PUBLIC_KEY:    "CKA_HASH_OF_SUBJECT_PUBLIC_KEY",
+		CKA_HASH_OF_ISSUER_PUBLIC_KEY:     "CKA_HASH_OF_ISSUER_PUBLIC_KEY",
+		CKA_NAME_HASH_ALGORITHM:           "CKA_NAME_HASH_ALGORITHM",
+		CKA_CHECK_VALUE:                   "CKA_CHECK_VALUE",
+		CKA_KEY_TYPE:                      "CKA_KEY_TYPE",
+		CKA_SUBJECT:                       "CKA_SUBJECT",
+		CKA_ID:                            "CKA_ID",
+		CKA_SENSITIVE:                     "CKA_SENSITIVE",
+		CKA_ENCRYPT:                       "CKA_ENCRYPT",
+		CKA_DECRYPT:                       "CKA_DECRYPT",
+		CKA_WRAP:                          "CKA_WRAP",
+		CKA_UNWRAP:                        "CKA_UNWRAP",
+		CKA_SIGN:                          "CKA_SIGN",
+		CKA_SIGN_RECOVER:                  "CKA_SIGN_RECOVER",
+		CKA_VERIFY:                        "CKA_VERIFY",
+		CKA_VERIFY_RECOVER:                "CKA_VERIFY_RECOVER",
+		CKA_DERIVE:                        "CKA_DERIVE",
+		CKA_START_DATE:                    "CKA_START_DATE",
+		CKA_END_DATE:                      "CKA_END_DATE",
+		CKA_MODULUS:                       "CKA_MODULUS",
+		CKA_MODULUS_BITS:                  "CKA_MODULUS_BITS",
+		CKA_PUBLIC_EXPONENT:               "CKA_PUBLIC_EXPONENT",
+		CKA_PRIVATE_EXPONENT:              "CKA_PRIVATE_EXPONENT",
+		CKA_PRIME_1:                       "CKA_PRIME_1",
+		CKA_PRIME_2:                       "CKA_PRIME_2",
+		CKA_EXPONENT_1:                    "CKA_EXPONENT_1",
+		CKA_EXPONENT_2:                    "CKA_EXPONENT_2",
+		CKA_COEFFICIENT:                   "CKA_COEFFICIENT",
+		CKA_PUBLIC_KEY_INFO:               "CKA_PUBLIC_KEY_INFO",
+		CKA_PRIME:                         "CKA_PRIME",
+		CKA_SUBPRIME:                      "CKA_SUBPRIME",
+		CKA_BASE:                          "CKA_BASE",
+		CKA_PRIME_BITS:                    "CKA_PRIME_BITS",
+		CKA_SUBPRIME_BITS:                 "CKA_SUBPRIME_BITS",
+		CKA_VALUE_BITS:                    "CKA_VALUE_BITS",
+		CKA_VALUE_LEN:                     "CKA_VALUE_LEN",
+		CKA_EXTRACTABLE:                   "CKA_EXTRACTABLE",
+		CKA_LOCAL:                         "CKA_LOCAL",
+		CKA_NEVER_EXTRACTABLE:             "CKA_NEVER_EXTRACTABLE",
+		CKA_ALWAYS_SENSITIVE:              "CKA_ALWAYS_SENSITIVE",
+		CKA_KEY_GEN_MECHANISM:             "CKA_KEY_GEN_MECHANISM",
+		CKA_MODIFIABLE:                    "CKA_MODIFIABLE",
+		CKA_COPYABLE:                      "CKA_COPYABLE",
+		CKA_DESTROYABLE:                   "CKA_DESTROYABLE",
+		CKA_EC_PARAMS:                     "CKA_EC_PARAMS",
+		CKA_EC_POINT:                      "CKA_EC_POINT",
+		CKA_SECONDARY_AUTH:                "CKA_SECONDARY_AUTH",
+		CKA_AUTH_PIN_FLAGS:                "CKA_AUTH_PIN_FLAGS",
+		CKA_ALWAYS_AUTHENTICATE:           "CKA_ALWAYS_AUTHENTICATE",
+		CKA_WRAP_WITH_TRUSTED:             "CKA_WRAP_WITH_TRUSTED",
+		CKA_OTP_FORMAT:                    "CKA_OTP_FORMAT",
+		CKA_OTP_LENGTH:                    "CKA_OTP_LENGTH",
+		CKA_OTP_TIME_INTERVAL:             "CKA_OTP_TIME_INTERVAL",
+		CKA_OTP_USER_FRIENDLY_MODE:        "CKA_OTP_USER_FRIENDLY_MODE",
+		CKA_OTP_CHALLENGE_REQUIREMENT:     "CKA_OTP_CHALLENGE_REQUIREMENT",
+		CKA_OTP_TIME_REQUIREMENT:          "CKA_OTP_TIME_REQUIREMENT",
+		CKA_OTP_COUNTER_REQUIREMENT:       "CKA_OTP_COUNTER_REQUIREMENT",
+		CKA_OTP_PIN_REQUIREMENT:           "CKA_OTP_PIN_REQUIREMENT",
+		CKA_OTP_USER_IDENTIFIER:           "CKA_OTP_USER_IDENTIFIER",
+		CKA_OTP_SERVICE_IDENTIFIER:        "CKA_OTP_SERVICE_IDENTIFIER",
+		CKA_OTP_SERVICE_LOGO:              "CKA_OTP_SERVICE_LOGO",
+		CKA_OTP_SERVICE_LOGO_TYPE:         "CKA_OTP_SERVICE_LOGO_TYPE",
+		CKA_OTP_COUNTER:                   "CKA_OTP_COUNTER",
+		CKA_OTP_TIME:                      "CKA_OTP_TIME",
+		CKA_GOSTR3410_PARAMS:              "CKA_GOSTR3410_PARAMS",
+		CKA_GOSTR3411_PARAMS:              "CKA_GOSTR3411_PARAMS",
+		CKA_GOST28147_PARAMS:              "CKA_GOST28147_PARAMS",
+		CKA_HW_FEATURE_TYPE:               "CKA_HW_FEATURE_TYPE",
+		CKA_RESET_ON_INIT:                 "CKA_RESET_ON_INIT",
+		CKA_HAS_RESET:                     "CKA_HAS_RESET",
+		CKA_PIXEL_X:                       "CKA_PIXEL_X",
+		CKA_PIXEL_Y:                       "CKA_PIXEL_Y",
+		CKA_RESOLUTION:                    "CKA_RESOLUTION",
+		CKA_CHAR_ROWS:                     "CKA_CHAR_ROWS",
+		CKA_CHAR_COLUMNS:                  "CKA_CHAR_COLUMNS",
+		CKA_COLOR:                         "CKA_COLOR",
+		CKA_BITS_PER_PIXEL:                "CKA_BITS_PER_PIXEL",
+		CKA_CHAR_SETS:                     "CKA_CHAR_SETS",
+		CKA_ENCODING_METHODS:              "CKA_ENCODING_METHODS",
+		CKA_MIME_TYPES:                    "CKA_MIME_TYPES",
+		CKA_MECHANISM_TYPE:                "CKA_MECHANISM_TYPE",
+		CKA_REQUIRED_CMS_ATTRIBUTES:       "CKA_REQUIRED_CMS_ATTRIBUTES",
+		CKA_DEFAULT_CMS_ATTRIBUTES:        "CKA_DEFAULT_CMS_ATTRIBUTES",
+		CKA_SUPPORTED_CMS_ATTRIBUTES:      "CKA_SUPPORTED_CMS_ATTRIBUTES",
+		CKA_WRAP_TEMPLATE:                 "CKA_WRAP_TEMPLATE",
+		CKA_UNWRAP_TEMPLATE:               "CKA_UNWRAP_TEMPLATE",
+		CKA_DERIVE_TEMPLATE:               "CKA_DERIVE_TEMPLATE",
+		CKA_ALLOWED_MECHANISMS:            "CKA_ALLOWED_MECHANISMS",
+		CKA_VENDOR_DEFINED:                "CKA_VENDOR_DEFINED",
+		CKA_IBM_RESTRICTABLE:              "CKA_IBM_RESTRICTABLE",
+		CKA_IBM_NEVER_MODIFIABLE:          "CKA_IBM_NEVER_MODIFIABLE",
+		CKA_IBM_RETAINKEY:                 "CKA_IBM_RETAINKEY",
+		CKA_IBM_ATTRBOUND:                 "CKA_IBM_ATTRBOUND",
+		CKA_IBM_KEYTYPE:                   "CKA_IBM_KEYTYPE",
+		CKA_IBM_CV:                        "CKA_IBM_CV",
+		CKA_IBM_MACKEY:                    "CKA_IBM_MACKEY",
+		CKA_IBM_USE_AS_DATA:               "CKA_IBM_USE_AS_DATA",
+		CKA_IBM_STRUCT_PARAMS:             "CKA_IBM_STRUCT_PARAMS",
+		CKA_IBM_STD_COMPLIANCE1:           "CKA_IBM_STD_COMPLIANCE1",
+		CKA_IBM_MLS_TYPE:                  "CKA_IBM_MLS_TYPE",
+		CKA_IBM_PROTKEY_EXTRACTABLE:       "CKA_IBM_PROTKEY_EXTRACTABLE",
+		CKA_IBM_PROTKEY_NEVER_EXTRACTABLE: "CKA_IBM_PROTKEY_NEVER_EXTRACTABLE",
+		CKA_IBM_WIRETEST:                  "CKA_IBM_WIRETEST",
+		CKA_VENDOR_DEFINED_GREP11:         "CKA_VENDOR_DEFINED_GREP11",
+		CKA_GREP11_TOKEN_LABEL:            "CKA_GREP11_TOKEN_LABEL",
+		CKA_GREP11_RAW_KEYBLOB:            "CKA_GREP11_RAW_KEYBLOB",
+		CKA_GREP11_VOTE_VERSION:           "CKA_GREP11_VOTE_VERSION",
+		CKA_IBM_EPX:                       "CKA_IBM_EPX",
+	}
+	CardAttributeFlagsNameToValue = map[string]CardAttributeFlags{
+		"XCP_ADMP_WK_IMPORT":          XCP_ADMP_WK_IMPORT,
+		"XCP_ADMP_WK_EXPORT":          XCP_ADMP_WK_EXPORT,
+		"XCP_ADMP_WK_1PART":           XCP_ADMP_WK_1PART,
+		"XCP_ADMP_WK_RANDOM":          XCP_ADMP_WK_RANDOM,
+		"XCP_ADMP_1SIGN":              XCP_ADMP_1SIGN,
+		"XCP_ADMP_CP_1SIGN":           XCP_ADMP_CP_1SIGN,
+		"XCP_ADMP_ZERO_1SIGN":         XCP_ADMP_ZERO_1SIGN,
+		"XCP_ADMP_NO_DOMAIN_IMPRINT":  XCP_ADMP_NO_DOMAIN_IMPRINT,
+		"XCP_ADMP_STATE_IMPORT":       XCP_ADMP_STATE_IMPORT,
+		"XCP_ADMP_STATE_EXPORT":       XCP_ADMP_STATE_EXPORT,
+		"XCP_ADMP_STATE_1PART":        XCP_ADMP_STATE_1PART,
+		"XCP_ADMP_NO_EPX":             XCP_ADMP_NO_EPX,
+		"XCP_ADMP_NO_EPXVM":           XCP_ADMP_NO_EPXVM,
+		"XCP_ADMP_DO_NOT_DISTURB":     XCP_ADMP_DO_NOT_DISTURB,
+		"XCP_ADMP__PERMS":             XCP_ADMP__PERMS,
+		"XCP_ADMP_CHG_WK_IMPORT":      XCP_ADMP_CHG_WK_IMPORT,
+		"XCP_ADMP_CHG_WK_EXPORT":      XCP_ADMP_CHG_WK_EXPORT,
+		"XCP_ADMP_CHG_WK_1PART":       XCP_ADMP_CHG_WK_1PART,
+		"XCP_ADMP_CHG_WK_RANDOM":      XCP_ADMP_CHG_WK_RANDOM,
+		"XCP_ADMP_CHG_SIGN_THR":       XCP_ADMP_CHG_SIGN_THR,
+		"XCP_ADMP_CHG_REVOKE_THR":     XCP_ADMP_CHG_REVOKE_THR,
+		"XCP_ADMP_CHG_1SIGN":          XCP_ADMP_CHG_1SIGN,
+		"XCP_ADMP_CHG_CP_1SIGN":       XCP_ADMP_CHG_CP_1SIGN,
+		"XCP_ADMP_CHG_ZERO_1SIGN":     XCP_ADMP_CHG_ZERO_1SIGN,
+		"XCP_ADMP_CHG_ST_IMPORT":      XCP_ADMP_CHG_ST_IMPORT,
+		"XCP_ADMP_CHG_ST_EXPORT":      XCP_ADMP_CHG_ST_EXPORT,
+		"XCP_ADMP_CHG_ST_1PART":       XCP_ADMP_CHG_ST_1PART,
+		"XCP_ADMP_CHG_NO_EPX":         XCP_ADMP_CHG_NO_EPX,
+		"XCP_ADMP_CHG_NO_EPXVM":       XCP_ADMP_CHG_NO_EPXVM,
+		"XCP_ADMP_NOT_SUP":            XCP_ADMP_NOT_SUP,
+		"XCP_ADMP_CHG_DO_NOT_DISTURB": XCP_ADMP_CHG_DO_NOT_DISTURB,
+		"XCP_ADMP__CHGBITS":           XCP_ADMP__CHGBITS,
+		"XCP_ADMP__DEFAULT":           XCP_ADMP__DEFAULT,
+	}
+	CardAttributeFlagsValueToName = map[CardAttributeFlags]string{
+		XCP_ADMP_WK_IMPORT:          "XCP_ADMP_WK_IMPORT",
+		XCP_ADMP_WK_EXPORT:          "XCP_ADMP_WK_EXPORT",
+		XCP_ADMP_WK_1PART:           "XCP_ADMP_WK_1PART",
+		XCP_ADMP_WK_RANDOM:          "XCP_ADMP_WK_RANDOM",
+		XCP_ADMP_1SIGN:              "XCP_ADMP_1SIGN",
+		XCP_ADMP_CP_1SIGN:           "XCP_ADMP_CP_1SIGN",
+		XCP_ADMP_ZERO_1SIGN:         "XCP_ADMP_ZERO_1SIGN",
+		XCP_ADMP_NO_DOMAIN_IMPRINT:  "XCP_ADMP_NO_DOMAIN_IMPRINT",
+		XCP_ADMP_STATE_IMPORT:       "XCP_ADMP_STATE_IMPORT",
+		XCP_ADMP_STATE_EXPORT:       "XCP_ADMP_STATE_EXPORT",
+		XCP_ADMP_STATE_1PART:        "XCP_ADMP_STATE_1PART",
+		XCP_ADMP_NO_EPX:             "XCP_ADMP_NO_EPX",
+		XCP_ADMP_NO_EPXVM:           "XCP_ADMP_NO_EPXVM",
+		XCP_ADMP_DO_NOT_DISTURB:     "XCP_ADMP_DO_NOT_DISTURB",
+		XCP_ADMP__PERMS:             "XCP_ADMP__PERMS",
+		XCP_ADMP_CHG_WK_IMPORT:      "XCP_ADMP_CHG_WK_IMPORT",
+		XCP_ADMP_CHG_WK_EXPORT:      "XCP_ADMP_CHG_WK_EXPORT",
+		XCP_ADMP_CHG_WK_1PART:       "XCP_ADMP_CHG_WK_1PART",
+		XCP_ADMP_CHG_WK_RANDOM:      "XCP_ADMP_CHG_WK_RANDOM",
+		XCP_ADMP_CHG_SIGN_THR:       "XCP_ADMP_CHG_SIGN_THR",
+		XCP_ADMP_CHG_REVOKE_THR:     "XCP_ADMP_CHG_REVOKE_THR",
+		XCP_ADMP_CHG_1SIGN:          "XCP_ADMP_CHG_1SIGN",
+		XCP_ADMP_CHG_CP_1SIGN:       "XCP_ADMP_CHG_CP_1SIGN",
+		XCP_ADMP_CHG_ZERO_1SIGN:     "XCP_ADMP_CHG_ZERO_1SIGN",
+		XCP_ADMP_CHG_ST_IMPORT:      "XCP_ADMP_CHG_ST_IMPORT",
+		XCP_ADMP_CHG_ST_EXPORT:      "XCP_ADMP_CHG_ST_EXPORT",
+		XCP_ADMP_CHG_ST_1PART:       "XCP_ADMP_CHG_ST_1PART",
+		XCP_ADMP_CHG_NO_EPX:         "XCP_ADMP_CHG_NO_EPX",
+		XCP_ADMP_CHG_NO_EPXVM:       "XCP_ADMP_CHG_NO_EPXVM",
+		XCP_ADMP_NOT_SUP:            "XCP_ADMP_NOT_SUP",
+		XCP_ADMP_CHG_DO_NOT_DISTURB: "XCP_ADMP_CHG_DO_NOT_DISTURB",
+		XCP_ADMP__CHGBITS:           "XCP_ADMP__CHGBITS",
+		XCP_ADMP__DEFAULT:           "XCP_ADMP__DEFAULT",
+	}
+	CardAttributeKeyNameToValue = map[string]CardAttributeKey{
+		"XCP_ADMINT_SIGN_THR":   XCP_ADMINT_SIGN_THR,
+		"XCP_ADMINT_REVOKE_THR": XCP_ADMINT_REVOKE_THR,
+		"XCP_ADMINT_PERMS":      XCP_ADMINT_PERMS,
+		"XCP_ADMINT_MODE":       XCP_ADMINT_MODE,
+		"XCP_ADMINT_STD":        XCP_ADMINT_STD,
+	}
+	CardAttributeKeyValueToName = map[CardAttributeKey]string{
+		XCP_ADMINT_SIGN_THR:   "XCP_ADMINT_SIGN_THR",
+		XCP_ADMINT_REVOKE_THR: "XCP_ADMINT_REVOKE_THR",
+		XCP_ADMINT_PERMS:      "XCP_ADMINT_PERMS",
+		XCP_ADMINT_MODE:       "XCP_ADMINT_MODE",
+		XCP_ADMINT_STD:        "XCP_ADMINT_STD",
+	}
+	ControlPointNameToValue = map[string]ControlPoint{
+		"XCP_CPB_ADD_CPBS":           XCP_CPB_ADD_CPBS,
+		"XCP_CPB_DELETE_CPBS":        XCP_CPB_DELETE_CPBS,
+		"XCP_CPB_SIGN_ASYMM":         XCP_CPB_SIGN_ASYMM,
+		"XCP_CPB_SIGN_SYMM":          XCP_CPB_SIGN_SYMM,
+		"XCP_CPB_SIGVERIFY_SYMM":     XCP_CPB_SIGVERIFY_SYMM,
+		"XCP_CPB_ENCRYPT_SYMM":       XCP_CPB_ENCRYPT_SYMM,
+		"XCP_CPB_DECRYPT_ASYMM":      XCP_CPB_DECRYPT_ASYMM,
+		"XCP_CPB_DECRYPT_SYMM":       XCP_CPB_DECRYPT_SYMM,
+		"XCP_CPB_WRAP_ASYMM":         XCP_CPB_WRAP_ASYMM,
+		"XCP_CPB_WRAP_SYMM":          XCP_CPB_WRAP_SYMM,
+		"XCP_CPB_UNWRAP_ASYMM":       XCP_CPB_UNWRAP_ASYMM,
+		"XCP_CPB_UNWRAP_SYMM":        XCP_CPB_UNWRAP_SYMM,
+		"XCP_CPB_KEYGEN_ASYMM":       XCP_CPB_KEYGEN_ASYMM,
+		"XCP_CPB_KEYGEN_SYMM":        XCP_CPB_KEYGEN_SYMM,
+		"XCP_CPB_RETAINKEYS":         XCP_CPB_RETAINKEYS,
+		"XCP_CPB_SKIP_KEYTESTS":      XCP_CPB_SKIP_KEYTESTS,
+		"XCP_CPB_NON_ATTRBOUND":      XCP_CPB_NON_ATTRBOUND,
+		"XCP_CPB_MODIFY_OBJECTS":     XCP_CPB_MODIFY_OBJECTS,
+		"XCP_CPB_RNG_SEED":           XCP_CPB_RNG_SEED,
+		"XCP_CPB_ALG_RAW_RSA":        XCP_CPB_ALG_RAW_RSA,
+		"XCP_CPB_ALG_NFIPS2009":      XCP_CPB_ALG_NFIPS2009,
+		"XCP_CPB_ALG_NBSI2009":       XCP_CPB_ALG_NBSI2009,
+		"XCP_CPB_KEYSZ_HMAC_ANY":     XCP_CPB_KEYSZ_HMAC_ANY,
+		"XCP_CPB_KEYSZ_BELOW80BIT":   XCP_CPB_KEYSZ_BELOW80BIT,
+		"XCP_CPB_KEYSZ_80BIT":        XCP_CPB_KEYSZ_80BIT,
+		"XCP_CPB_KEYSZ_112BIT":       XCP_CPB_KEYSZ_112BIT,
+		"XCP_CPB_KEYSZ_128BIT":       XCP_CPB_KEYSZ_128BIT,
+		"XCP_CPB_KEYSZ_192BIT":       XCP_CPB_KEYSZ_192BIT,
+		"XCP_CPB_KEYSZ_256BIT":       XCP_CPB_KEYSZ_256BIT,
+		"XCP_CPB_KEYSZ_RSA65536":     XCP_CPB_KEYSZ_RSA65536,
+		"XCP_CPB_ALG_RSA":            XCP_CPB_ALG_RSA,
+		"XCP_CPB_ALG_DSA":            XCP_CPB_ALG_DSA,
+		"XCP_CPB_ALG_EC":             XCP_CPB_ALG_EC,
+		"XCP_CPB_ALG_EC_BPOOLCRV":    XCP_CPB_ALG_EC_BPOOLCRV,
+		"XCP_CPB_ALG_EC_NISTCRV":     XCP_CPB_ALG_EC_NISTCRV,
+		"XCP_CPB_ALG_NFIPS2011":      XCP_CPB_ALG_NFIPS2011,
+		"XCP_CPB_ALG_NBSI2011":       XCP_CPB_ALG_NBSI2011,
+		"XCP_CPB_USER_SET_TRUSTED":   XCP_CPB_USER_SET_TRUSTED,
+		"XCP_CPB_ALG_SKIP_CROSSCHK":  XCP_CPB_ALG_SKIP_CROSSCHK,
+		"XCP_CPB_WRAP_CRYPT_KEYS":    XCP_CPB_WRAP_CRYPT_KEYS,
+		"XCP_CPB_SIGN_CRYPT_KEYS":    XCP_CPB_SIGN_CRYPT_KEYS,
+		"XCP_CPB_WRAP_SIGN_KEYS":     XCP_CPB_WRAP_SIGN_KEYS,
+		"XCP_CPB_USER_SET_ATTRBOUND": XCP_CPB_USER_SET_ATTRBOUND,
+		"XCP_CPB_ALLOW_PASSPHRASE":   XCP_CPB_ALLOW_PASSPHRASE,
+		"XCP_CPB_WRAP_STRONGER_KEY":  XCP_CPB_WRAP_STRONGER_KEY,
+		"XCP_CPB_WRAP_WITH_RAW_SPKI": XCP_CPB_WRAP_WITH_RAW_SPKI,
+		"XCP_CPB_ALG_DH":             XCP_CPB_ALG_DH,
+		"XCP_CPB_DERIVE":             XCP_CPB_DERIVE,
+		"XCP_CPB_ALG_EC_25519":       XCP_CPB_ALG_EC_25519,
+		"XCP_CPB_ALG_NBSI2017":       XCP_CPB_ALG_NBSI2017,
+		"XCP_CPB_EMV":                XCP_CPB_EMV,
+		"XCP_CPB_EMV_MIX":            XCP_CPB_EMV_MIX,
+		"XCP_CPB_BTC":                XCP_CPB_BTC,
+	}
+	ControlPointValueToName = map[ControlPoint]string{
+		XCP_CPB_ADD_CPBS:           "XCP_CPB_ADD_CPBS",
+		XCP_CPB_DELETE_CPBS:        "XCP_CPB_DELETE_CPBS",
+		XCP_CPB_SIGN_ASYMM:         "XCP_CPB_SIGN_ASYMM",
+		XCP_CPB_SIGN_SYMM:          "XCP_CPB_SIGN_SYMM",
+		XCP_CPB_SIGVERIFY_SYMM:     "XCP_CPB_SIGVERIFY_SYMM",
+		XCP_CPB_ENCRYPT_SYMM:       "XCP_CPB_ENCRYPT_SYMM",
+		XCP_CPB_DECRYPT_ASYMM:      "XCP_CPB_DECRYPT_ASYMM",
+		XCP_CPB_DECRYPT_SYMM:       "XCP_CPB_DECRYPT_SYMM",
+		XCP_CPB_WRAP_ASYMM:         "XCP_CPB_WRAP_ASYMM",
+		XCP_CPB_WRAP_SYMM:          "XCP_CPB_WRAP_SYMM",
+		XCP_CPB_UNWRAP_ASYMM:       "XCP_CPB_UNWRAP_ASYMM",
+		XCP_CPB_UNWRAP_SYMM:        "XCP_CPB_UNWRAP_SYMM",
+		XCP_CPB_KEYGEN_ASYMM:       "XCP_CPB_KEYGEN_ASYMM",
+		XCP_CPB_KEYGEN_SYMM:        "XCP_CPB_KEYGEN_SYMM",
+		XCP_CPB_RETAINKEYS:         "XCP_CPB_RETAINKEYS",
+		XCP_CPB_SKIP_KEYTESTS:      "XCP_CPB_SKIP_KEYTESTS",
+		XCP_CPB_NON_ATTRBOUND:      "XCP_CPB_NON_ATTRBOUND",
+		XCP_CPB_MODIFY_OBJECTS:     "XCP_CPB_MODIFY_OBJECTS",
+		XCP_CPB_RNG_SEED:           "XCP_CPB_RNG_SEED",
+		XCP_CPB_ALG_RAW_RSA:        "XCP_CPB_ALG_RAW_RSA",
+		XCP_CPB_ALG_NFIPS2009:      "XCP_CPB_ALG_NFIPS2009",
+		XCP_CPB_ALG_NBSI2009:       "XCP_CPB_ALG_NBSI2009",
+		XCP_CPB_KEYSZ_HMAC_ANY:     "XCP_CPB_KEYSZ_HMAC_ANY",
+		XCP_CPB_KEYSZ_BELOW80BIT:   "XCP_CPB_KEYSZ_BELOW80BIT",
+		XCP_CPB_KEYSZ_80BIT:        "XCP_CPB_KEYSZ_80BIT",
+		XCP_CPB_KEYSZ_112BIT:       "XCP_CPB_KEYSZ_112BIT",
+		XCP_CPB_KEYSZ_128BIT:       "XCP_CPB_KEYSZ_128BIT",
+		XCP_CPB_KEYSZ_192BIT:       "XCP_CPB_KEYSZ_192BIT",
+		XCP_CPB_KEYSZ_256BIT:       "XCP_CPB_KEYSZ_256BIT",
+		XCP_CPB_KEYSZ_RSA65536:     "XCP_CPB_KEYSZ_RSA65536",
+		XCP_CPB_ALG_RSA:            "XCP_CPB_ALG_RSA",
+		XCP_CPB_ALG_DSA:            "XCP_CPB_ALG_DSA",
+		XCP_CPB_ALG_EC:             "XCP_CPB_ALG_EC",
+		XCP_CPB_ALG_EC_BPOOLCRV:    "XCP_CPB_ALG_EC_BPOOLCRV",
+		XCP_CPB_ALG_EC_NISTCRV:     "XCP_CPB_ALG_EC_NISTCRV",
+		XCP_CPB_ALG_NFIPS2011:      "XCP_CPB_ALG_NFIPS2011",
+		XCP_CPB_ALG_NBSI2011:       "XCP_CPB_ALG_NBSI2011",
+		XCP_CPB_USER_SET_TRUSTED:   "XCP_CPB_USER_SET_TRUSTED",
+		XCP_CPB_ALG_SKIP_CROSSCHK:  "XCP_CPB_ALG_SKIP_CROSSCHK",
+		XCP_CPB_WRAP_CRYPT_KEYS:    "XCP_CPB_WRAP_CRYPT_KEYS",
+		XCP_CPB_SIGN_CRYPT_KEYS:    "XCP_CPB_SIGN_CRYPT_KEYS",
+		XCP_CPB_WRAP_SIGN_KEYS:     "XCP_CPB_WRAP_SIGN_KEYS",
+		XCP_CPB_USER_SET_ATTRBOUND: "XCP_CPB_USER_SET_ATTRBOUND",
+		XCP_CPB_ALLOW_PASSPHRASE:   "XCP_CPB_ALLOW_PASSPHRASE",
+		XCP_CPB_WRAP_STRONGER_KEY:  "XCP_CPB_WRAP_STRONGER_KEY",
+		XCP_CPB_WRAP_WITH_RAW_SPKI: "XCP_CPB_WRAP_WITH_RAW_SPKI",
+		XCP_CPB_ALG_DH:             "XCP_CPB_ALG_DH",
+		XCP_CPB_DERIVE:             "XCP_CPB_DERIVE",
+		XCP_CPB_ALG_EC_25519:       "XCP_CPB_ALG_EC_25519",
+		XCP_CPB_ALG_NBSI2017:       "XCP_CPB_ALG_NBSI2017",
+		XCP_CPB_EMV:                "XCP_CPB_EMV",
+		XCP_CPB_EMV_MIX:            "XCP_CPB_EMV_MIX",
+		XCP_CPB_BTC:                "XCP_CPB_BTC",
+	}
+	FunctionIDNameToValue = map[string]FunctionID{
+		"FNID_Login":             FNID_Login,
+		"FNID_Logout":            FNID_Logout,
+		"FNID_SeedRandom":        FNID_SeedRandom,
+		"FNID_GenerateRandom":    FNID_GenerateRandom,
+		"FNID_DigestInit":        FNID_DigestInit,
+		"FNID_DigestUpdate":      FNID_DigestUpdate,
+		"FNID_DigestKey":         FNID_DigestKey,
+		"FNID_DigestFinal":       FNID_DigestFinal,
+		"FNID_Digest":            FNID_Digest,
+		"FNID_DigestSingle":      FNID_DigestSingle,
+		"FNID_EncryptInit":       FNID_EncryptInit,
+		"FNID_DecryptInit":       FNID_DecryptInit,
+		"FNID_EncryptUpdate":     FNID_EncryptUpdate,
+		"FNID_DecryptUpdate":     FNID_DecryptUpdate,
+		"FNID_EncryptFinal":      FNID_EncryptFinal,
+		"FNID_DecryptFinal":      FNID_DecryptFinal,
+		"FNID_Encrypt":           FNID_Encrypt,
+		"FNID_Decrypt":           FNID_Decrypt,
+		"FNID_EncryptSingle":     FNID_EncryptSingle,
+		"FNID_DecryptSingle":     FNID_DecryptSingle,
+		"FNID_GenerateKey":       FNID_GenerateKey,
+		"FNID_GenerateKeyPair":   FNID_GenerateKeyPair,
+		"FNID_SignInit":          FNID_SignInit,
+		"FNID_SignUpdate":        FNID_SignUpdate,
+		"FNID_SignFinal":         FNID_SignFinal,
+		"FNID_Sign":              FNID_Sign,
+		"FNID_VerifyInit":        FNID_VerifyInit,
+		"FNID_VerifyUpdate":      FNID_VerifyUpdate,
+		"FNID_VerifyFinal":       FNID_VerifyFinal,
+		"FNID_Verify":            FNID_Verify,
+		"FNID_SignSingle":        FNID_SignSingle,
+		"FNID_VerifySingle":      FNID_VerifySingle,
+		"FNID_WrapKey":           FNID_WrapKey,
+		"FNID_UnwrapKey":         FNID_UnwrapKey,
+		"FNID_DeriveKey":         FNID_DeriveKey,
+		"FNID_GetMechanismList":  FNID_GetMechanismList,
+		"FNID_GetMechanismInfo":  FNID_GetMechanismInfo,
+		"FNID_get_xcp_info":      FNID_get_xcp_info,
+		"FNID_GetAttributeValue": FNID_GetAttributeValue,
+		"FNID_SetAttributeValue": FNID_SetAttributeValue,
+		"FNID_admin":             FNID_admin,
+		"FNID_ReencryptSingle":   FNID_ReencryptSingle,
+		"FNID_NEXT_AVAILABLE":    FNID_NEXT_AVAILABLE,
+	}
+	FunctionIDValueToName = map[FunctionID]string{
+		FNID_Login:             "FNID_Login",
+		FNID_Logout:            "FNID_Logout",
+		FNID_SeedRandom:        "FNID_SeedRandom",
+		FNID_GenerateRandom:    "FNID_GenerateRandom",
+		FNID_DigestInit:        "FNID_DigestInit",
+		FNID_DigestUpdate:      "FNID_DigestUpdate",
+		FNID_DigestKey:         "FNID_DigestKey",
+		FNID_DigestFinal:       "FNID_DigestFinal",
+		FNID_Digest:            "FNID_Digest",
+		FNID_DigestSingle:      "FNID_DigestSingle",
+		FNID_EncryptInit:       "FNID_EncryptInit",
+		FNID_DecryptInit:       "FNID_DecryptInit",
+		FNID_EncryptUpdate:     "FNID_EncryptUpdate",
+		FNID_DecryptUpdate:     "FNID_DecryptUpdate",
+		FNID_EncryptFinal:      "FNID_EncryptFinal",
+		FNID_DecryptFinal:      "FNID_DecryptFinal",
+		FNID_Encrypt:           "FNID_Encrypt",
+		FNID_Decrypt:           "FNID_Decrypt",
+		FNID_EncryptSingle:     "FNID_EncryptSingle",
+		FNID_DecryptSingle:     "FNID_DecryptSingle",
+		FNID_GenerateKey:       "FNID_GenerateKey",
+		FNID_GenerateKeyPair:   "FNID_GenerateKeyPair",
+		FNID_SignInit:          "FNID_SignInit",
+		FNID_SignUpdate:        "FNID_SignUpdate",
+		FNID_SignFinal:         "FNID_SignFinal",
+		FNID_Sign:              "FNID_Sign",
+		FNID_VerifyInit:        "FNID_VerifyInit",
+		FNID_VerifyUpdate:      "FNID_VerifyUpdate",
+		FNID_VerifyFinal:       "FNID_VerifyFinal",
+		FNID_Verify:            "FNID_Verify",
+		FNID_SignSingle:        "FNID_SignSingle",
+		FNID_VerifySingle:      "FNID_VerifySingle",
+		FNID_WrapKey:           "FNID_WrapKey",
+		FNID_UnwrapKey:         "FNID_UnwrapKey",
+		FNID_DeriveKey:         "FNID_DeriveKey",
+		FNID_GetMechanismList:  "FNID_GetMechanismList",
+		FNID_GetMechanismInfo:  "FNID_GetMechanismInfo",
+		FNID_get_xcp_info:      "FNID_get_xcp_info",
+		FNID_GetAttributeValue: "FNID_GetAttributeValue",
+		FNID_SetAttributeValue: "FNID_SetAttributeValue",
+		FNID_admin:             "FNID_admin",
+		FNID_ReencryptSingle:   "FNID_ReencryptSingle",
+		FNID_NEXT_AVAILABLE:    "FNID_NEXT_AVAILABLE",
+	}
+	ImporterKeyTypeNameToValue = map[string]ImporterKeyType{
+		"XCP_IMPRKEY_RSA_2048": XCP_IMPRKEY_RSA_2048,
+		"XCP_IMPRKEY_RSA_4096": XCP_IMPRKEY_RSA_4096,
+		"XCP_IMPRKEY_EC_P256":  XCP_IMPRKEY_EC_P256,
+		"XCP_IMPRKEY_EC_P521":  XCP_IMPRKEY_EC_P521,
+		"XCP_IMPRKEY_RSA_3072": XCP_IMPRKEY_RSA_3072,
+	}
+	ImporterKeyTypeValueToName = map[ImporterKeyType]string{
+		XCP_IMPRKEY_RSA_2048: "XCP_IMPRKEY_RSA_2048",
+		XCP_IMPRKEY_RSA_4096: "XCP_IMPRKEY_RSA_4096",
+		XCP_IMPRKEY_EC_P256:  "XCP_IMPRKEY_EC_P256",
+		XCP_IMPRKEY_EC_P521:  "XCP_IMPRKEY_EC_P521",
+		XCP_IMPRKEY_RSA_3072: "XCP_IMPRKEY_RSA_3072",
+	}
+	KeyTypeNameToValue = map[string]KeyType{
 		"CKK_RSA":                CKK_RSA,
 		"CKK_DSA":                CKK_DSA,
 		"CKK_DH":                 CKK_DH,
@@ -1077,14 +1727,14 @@ var (
 		"CKK_ACTI":               CKK_ACTI,
 		"CKK_CAMELLIA":           CKK_CAMELLIA,
 		"CKK_ARIA":               CKK_ARIA,
-		"CKK_SHA512_224_HMAC":    CKK_SHA512_224_HMAC,
-		"CKK_SHA512_256_HMAC":    CKK_SHA512_256_HMAC,
-		"CKK_SHA512_T_HMAC":      CKK_SHA512_T_HMAC,
+		"CKK_MD5_HMAC":           CKK_MD5_HMAC,
 		"CKK_SHA_1_HMAC":         CKK_SHA_1_HMAC,
-		"CKK_SHA224_HMAC":        CKK_SHA224_HMAC,
+		"CKK_RIPEMD128_HMAC":     CKK_RIPEMD128_HMAC,
+		"CKK_RIPEMD160_HMAC":     CKK_RIPEMD160_HMAC,
 		"CKK_SHA256_HMAC":        CKK_SHA256_HMAC,
 		"CKK_SHA384_HMAC":        CKK_SHA384_HMAC,
 		"CKK_SHA512_HMAC":        CKK_SHA512_HMAC,
+		"CKK_SHA224_HMAC":        CKK_SHA224_HMAC,
 		"CKK_SEED":               CKK_SEED,
 		"CKK_GOSTR3410":          CKK_GOSTR3410,
 		"CKK_GOSTR3411":          CKK_GOSTR3411,
@@ -1097,7 +1747,7 @@ var (
 		"CKK_IBM_EPX_ASYMM_PRIV": CKK_IBM_EPX_ASYMM_PRIV,
 		"CKK_IBM_EPX_ASYMM_PUB":  CKK_IBM_EPX_ASYMM_PUB,
 	}
-	_KeyTypeValueToName = map[KeyType]string{
+	KeyTypeValueToName = map[KeyType]string{
 		CKK_RSA:                "CKK_RSA",
 		CKK_DSA:                "CKK_DSA",
 		CKK_DH:                 "CKK_DH",
@@ -1127,14 +1777,14 @@ var (
 		CKK_ACTI:               "CKK_ACTI",
 		CKK_CAMELLIA:           "CKK_CAMELLIA",
 		CKK_ARIA:               "CKK_ARIA",
-		CKK_SHA512_224_HMAC:    "CKK_SHA512_224_HMAC",
-		CKK_SHA512_256_HMAC:    "CKK_SHA512_256_HMAC",
-		CKK_SHA512_T_HMAC:      "CKK_SHA512_T_HMAC",
+		CKK_MD5_HMAC:           "CKK_MD5_HMAC",
 		CKK_SHA_1_HMAC:         "CKK_SHA_1_HMAC",
-		CKK_SHA224_HMAC:        "CKK_SHA224_HMAC",
+		CKK_RIPEMD128_HMAC:     "CKK_RIPEMD128_HMAC",
+		CKK_RIPEMD160_HMAC:     "CKK_RIPEMD160_HMAC",
 		CKK_SHA256_HMAC:        "CKK_SHA256_HMAC",
 		CKK_SHA384_HMAC:        "CKK_SHA384_HMAC",
 		CKK_SHA512_HMAC:        "CKK_SHA512_HMAC",
+		CKK_SHA224_HMAC:        "CKK_SHA224_HMAC",
 		CKK_SEED:               "CKK_SEED",
 		CKK_GOSTR3410:          "CKK_GOSTR3410",
 		CKK_GOSTR3411:          "CKK_GOSTR3411",
@@ -1147,7 +1797,7 @@ var (
 		CKK_IBM_EPX_ASYMM_PRIV: "CKK_IBM_EPX_ASYMM_PRIV",
 		CKK_IBM_EPX_ASYMM_PUB:  "CKK_IBM_EPX_ASYMM_PUB",
 	}
-	_MechanismNameToValue = map[string]Mechanism{
+	MechanismNameToValue = map[string]Mechanism{
 		"CKM_RSA_PKCS_KEY_PAIR_GEN":          CKM_RSA_PKCS_KEY_PAIR_GEN,
 		"CKM_RSA_PKCS":                       CKM_RSA_PKCS,
 		"CKM_RSA_9796":                       CKM_RSA_9796,
@@ -1166,7 +1816,6 @@ var (
 		"CKM_DSA_KEY_PAIR_GEN":               CKM_DSA_KEY_PAIR_GEN,
 		"CKM_DSA":                            CKM_DSA,
 		"CKM_DSA_SHA1":                       CKM_DSA_SHA1,
-		"CKM_DSA_FIPS_G_GEN":                 CKM_DSA_FIPS_G_GEN,
 		"CKM_DSA_SHA224":                     CKM_DSA_SHA224,
 		"CKM_DSA_SHA256":                     CKM_DSA_SHA256,
 		"CKM_DSA_SHA384":                     CKM_DSA_SHA384,
@@ -1412,6 +2061,10 @@ var (
 		"CKM_EC_KEY_PAIR_GEN":                CKM_EC_KEY_PAIR_GEN,
 		"CKM_ECDSA":                          CKM_ECDSA,
 		"CKM_ECDSA_SHA1":                     CKM_ECDSA_SHA1,
+		"CKM_ECDSA_SHA224":                   CKM_ECDSA_SHA224,
+		"CKM_ECDSA_SHA256":                   CKM_ECDSA_SHA256,
+		"CKM_ECDSA_SHA384":                   CKM_ECDSA_SHA384,
+		"CKM_ECDSA_SHA512":                   CKM_ECDSA_SHA512,
 		"CKM_ECDH1_DERIVE":                   CKM_ECDH1_DERIVE,
 		"CKM_ECDH1_COFACTOR_DERIVE":          CKM_ECDH1_COFACTOR_DERIVE,
 		"CKM_ECMQV_DERIVE":                   CKM_ECMQV_DERIVE,
@@ -1433,9 +2086,9 @@ var (
 		"CKM_AES_CTR":                        CKM_AES_CTR,
 		"CKM_AES_GCM":                        CKM_AES_GCM,
 		"CKM_AES_CCM":                        CKM_AES_CCM,
-		"CKM_AES_CMAC_GENERAL":               CKM_AES_CMAC_GENERAL,
-		"CKM_AES_CMAC":                       CKM_AES_CMAC,
 		"CKM_AES_CTS":                        CKM_AES_CTS,
+		"CKM_AES_CMAC":                       CKM_AES_CMAC,
+		"CKM_AES_CMAC_GENERAL":               CKM_AES_CMAC_GENERAL,
 		"CKM_AES_XCBC_MAC":                   CKM_AES_XCBC_MAC,
 		"CKM_AES_XCBC_MAC_96":                CKM_AES_XCBC_MAC_96,
 		"CKM_AES_GMAC":                       CKM_AES_GMAC,
@@ -1504,18 +2157,27 @@ var (
 		"CKM_IBM_SHA512_224_HMAC_GENERAL":    CKM_IBM_SHA512_224_HMAC_GENERAL,
 		"CKM_IBM_SHA512_256_KEY_DERIVATION":  CKM_IBM_SHA512_256_KEY_DERIVATION,
 		"CKM_IBM_SHA512_224_KEY_DERIVATION":  CKM_IBM_SHA512_224_KEY_DERIVATION,
-		"CKM_IBM_EC_C25519":                  CKM_IBM_EC_C25519,
-		"CKM_IBM_EDDSA_SHA512":               CKM_IBM_EDDSA_SHA512,
-		"CKM_IBM_EDDSA_PH_SHA512":            CKM_IBM_EDDSA_PH_SHA512,
-		"CKM_IBM_EC_C448":                    CKM_IBM_EC_C448,
+		"CKM_IBM_EC_X25519":                  CKM_IBM_EC_X25519,
+		"CKM_IBM_ED25519_SHA512":             CKM_IBM_ED25519_SHA512,
+		"CKM_IBM_ED25519_PH_SHA512":          CKM_IBM_ED25519_PH_SHA512,
+		"CKM_IBM_EC_X448":                    CKM_IBM_EC_X448,
 		"CKM_IBM_ED448_SHA3":                 CKM_IBM_ED448_SHA3,
 		"CKM_IBM_ED448_PH_SHA3":              CKM_IBM_ED448_PH_SHA3,
 		"CKM_IBM_SIPHASH":                    CKM_IBM_SIPHASH,
+		"CKM_IBM_SHA3_224_HMAC":              CKM_IBM_SHA3_224_HMAC,
+		"CKM_IBM_SHA3_256_HMAC":              CKM_IBM_SHA3_256_HMAC,
+		"CKM_IBM_SHA3_384_HMAC":              CKM_IBM_SHA3_384_HMAC,
+		"CKM_IBM_SHA3_512_HMAC":              CKM_IBM_SHA3_512_HMAC,
+		"CKM_IBM_EC_X25519_RAW":              CKM_IBM_EC_X25519_RAW,
+		"CKM_IBM_EC_X448_RAW":                CKM_IBM_EC_X448_RAW,
+		"CKM_IBM_ECDSA_OTHER":                CKM_IBM_ECDSA_OTHER,
 		"CKM_IBM_CLEARKEY_TRANSPORT":         CKM_IBM_CLEARKEY_TRANSPORT,
 		"CKM_IBM_ATTRIBUTEBOUND_WRAP":        CKM_IBM_ATTRIBUTEBOUND_WRAP,
 		"CKM_IBM_TRANSPORTKEY":               CKM_IBM_TRANSPORTKEY,
 		"CKM_IBM_DH_PKCS_DERIVE_RAW":         CKM_IBM_DH_PKCS_DERIVE_RAW,
 		"CKM_IBM_ECDH1_DERIVE_RAW":           CKM_IBM_ECDH1_DERIVE_RAW,
+		"CKM_IBM_POLY1305":                   CKM_IBM_POLY1305,
+		"CKM_IBM_CHACHA20":                   CKM_IBM_CHACHA20,
 		"CKM_IBM_FILE":                       CKM_IBM_FILE,
 		"CKM_IBM_WIRETEST":                   CKM_IBM_WIRETEST,
 		"CKM_IBM_RETAINKEY":                  CKM_IBM_RETAINKEY,
@@ -1536,10 +2198,11 @@ var (
 		"CKM_IBM_SM2_SM3_RFC":                CKM_IBM_SM2_SM3_RFC,
 		"CKM_IBM_SM4_MAC":                    CKM_IBM_SM4_MAC,
 		"CKM_IBM_ISO2_SM4_MAC":               CKM_IBM_ISO2_SM4_MAC,
+		"CKM_IBM_BTC_DERIVE":                 CKM_IBM_BTC_DERIVE,
 		"CKM_IBM_EPX":                        CKM_IBM_EPX,
 		"CKM_IBM_EPX_WPRM":                   CKM_IBM_EPX_WPRM,
 	}
-	_MechanismValueToName = map[Mechanism]string{
+	MechanismValueToName = map[Mechanism]string{
 		CKM_RSA_PKCS_KEY_PAIR_GEN:          "CKM_RSA_PKCS_KEY_PAIR_GEN",
 		CKM_RSA_PKCS:                       "CKM_RSA_PKCS",
 		CKM_RSA_9796:                       "CKM_RSA_9796",
@@ -1558,7 +2221,6 @@ var (
 		CKM_DSA_KEY_PAIR_GEN:               "CKM_DSA_KEY_PAIR_GEN",
 		CKM_DSA:                            "CKM_DSA",
 		CKM_DSA_SHA1:                       "CKM_DSA_SHA1",
-		CKM_DSA_FIPS_G_GEN:                 "CKM_DSA_FIPS_G_GEN",
 		CKM_DSA_SHA224:                     "CKM_DSA_SHA224",
 		CKM_DSA_SHA256:                     "CKM_DSA_SHA256",
 		CKM_DSA_SHA384:                     "CKM_DSA_SHA384",
@@ -1795,6 +2457,10 @@ var (
 		CKM_EC_KEY_PAIR_GEN:                "CKM_EC_KEY_PAIR_GEN",
 		CKM_ECDSA:                          "CKM_ECDSA",
 		CKM_ECDSA_SHA1:                     "CKM_ECDSA_SHA1",
+		CKM_ECDSA_SHA224:                   "CKM_ECDSA_SHA224",
+		CKM_ECDSA_SHA256:                   "CKM_ECDSA_SHA256",
+		CKM_ECDSA_SHA384:                   "CKM_ECDSA_SHA384",
+		CKM_ECDSA_SHA512:                   "CKM_ECDSA_SHA512",
 		CKM_ECDH1_DERIVE:                   "CKM_ECDH1_DERIVE",
 		CKM_ECDH1_COFACTOR_DERIVE:          "CKM_ECDH1_COFACTOR_DERIVE",
 		CKM_ECMQV_DERIVE:                   "CKM_ECMQV_DERIVE",
@@ -1816,9 +2482,9 @@ var (
 		CKM_AES_CTR:                        "CKM_AES_CTR",
 		CKM_AES_GCM:                        "CKM_AES_GCM",
 		CKM_AES_CCM:                        "CKM_AES_CCM",
-		CKM_AES_CMAC_GENERAL:               "CKM_AES_CMAC_GENERAL",
-		CKM_AES_CMAC:                       "CKM_AES_CMAC",
 		CKM_AES_CTS:                        "CKM_AES_CTS",
+		CKM_AES_CMAC:                       "CKM_AES_CMAC",
+		CKM_AES_CMAC_GENERAL:               "CKM_AES_CMAC_GENERAL",
 		CKM_AES_XCBC_MAC:                   "CKM_AES_XCBC_MAC",
 		CKM_AES_XCBC_MAC_96:                "CKM_AES_XCBC_MAC_96",
 		CKM_AES_GMAC:                       "CKM_AES_GMAC",
@@ -1887,18 +2553,27 @@ var (
 		CKM_IBM_SHA512_224_HMAC_GENERAL:    "CKM_IBM_SHA512_224_HMAC_GENERAL",
 		CKM_IBM_SHA512_256_KEY_DERIVATION:  "CKM_IBM_SHA512_256_KEY_DERIVATION",
 		CKM_IBM_SHA512_224_KEY_DERIVATION:  "CKM_IBM_SHA512_224_KEY_DERIVATION",
-		CKM_IBM_EC_C25519:                  "CKM_IBM_EC_C25519",
-		CKM_IBM_EDDSA_SHA512:               "CKM_IBM_EDDSA_SHA512",
-		CKM_IBM_EDDSA_PH_SHA512:            "CKM_IBM_EDDSA_PH_SHA512",
-		CKM_IBM_EC_C448:                    "CKM_IBM_EC_C448",
+		CKM_IBM_EC_X25519:                  "CKM_IBM_EC_X25519",
+		CKM_IBM_ED25519_SHA512:             "CKM_IBM_ED25519_SHA512",
+		CKM_IBM_ED25519_PH_SHA512:          "CKM_IBM_ED25519_PH_SHA512",
+		CKM_IBM_EC_X448:                    "CKM_IBM_EC_X448",
 		CKM_IBM_ED448_SHA3:                 "CKM_IBM_ED448_SHA3",
 		CKM_IBM_ED448_PH_SHA3:              "CKM_IBM_ED448_PH_SHA3",
 		CKM_IBM_SIPHASH:                    "CKM_IBM_SIPHASH",
+		CKM_IBM_SHA3_224_HMAC:              "CKM_IBM_SHA3_224_HMAC",
+		CKM_IBM_SHA3_256_HMAC:              "CKM_IBM_SHA3_256_HMAC",
+		CKM_IBM_SHA3_384_HMAC:              "CKM_IBM_SHA3_384_HMAC",
+		CKM_IBM_SHA3_512_HMAC:              "CKM_IBM_SHA3_512_HMAC",
+		CKM_IBM_EC_X25519_RAW:              "CKM_IBM_EC_X25519_RAW",
+		CKM_IBM_EC_X448_RAW:                "CKM_IBM_EC_X448_RAW",
+		CKM_IBM_ECDSA_OTHER:                "CKM_IBM_ECDSA_OTHER",
 		CKM_IBM_CLEARKEY_TRANSPORT:         "CKM_IBM_CLEARKEY_TRANSPORT",
 		CKM_IBM_ATTRIBUTEBOUND_WRAP:        "CKM_IBM_ATTRIBUTEBOUND_WRAP",
 		CKM_IBM_TRANSPORTKEY:               "CKM_IBM_TRANSPORTKEY",
 		CKM_IBM_DH_PKCS_DERIVE_RAW:         "CKM_IBM_DH_PKCS_DERIVE_RAW",
 		CKM_IBM_ECDH1_DERIVE_RAW:           "CKM_IBM_ECDH1_DERIVE_RAW",
+		CKM_IBM_POLY1305:                   "CKM_IBM_POLY1305",
+		CKM_IBM_CHACHA20:                   "CKM_IBM_CHACHA20",
 		CKM_IBM_FILE:                       "CKM_IBM_FILE",
 		CKM_IBM_WIRETEST:                   "CKM_IBM_WIRETEST",
 		CKM_IBM_RETAINKEY:                  "CKM_IBM_RETAINKEY",
@@ -1919,10 +2594,11 @@ var (
 		CKM_IBM_SM2_SM3_RFC:                "CKM_IBM_SM2_SM3_RFC",
 		CKM_IBM_SM4_MAC:                    "CKM_IBM_SM4_MAC",
 		CKM_IBM_ISO2_SM4_MAC:               "CKM_IBM_ISO2_SM4_MAC",
+		CKM_IBM_BTC_DERIVE:                 "CKM_IBM_BTC_DERIVE",
 		CKM_IBM_EPX:                        "CKM_IBM_EPX",
 		CKM_IBM_EPX_WPRM:                   "CKM_IBM_EPX_WPRM",
 	}
-	_MechanismInfoFlagNameToValue = map[string]MechanismInfoFlag{
+	MechanismInfoFlagNameToValue = map[string]MechanismInfoFlag{
 		"CKF_DONT_BLOCK":                     CKF_DONT_BLOCK,
 		"CKF_HW":                             CKF_HW,
 		"CKF_LIBRARY_CANT_CREATE_OS_THREADS": CKF_LIBRARY_CANT_CREATE_OS_THREADS,
@@ -1978,8 +2654,8 @@ var (
 		"CKF_ARRAY_ATTRIBUTE":                CKF_ARRAY_ATTRIBUTE,
 		"CKF_EXTENSION":                      CKF_EXTENSION,
 	}
-	_MechanismInfoFlagValueToName = map[MechanismInfoFlag]string{}
-	_ObjectClassNameToValue       = map[string]ObjectClass{
+	MechanismInfoFlagValueToName = map[MechanismInfoFlag]string{}
+	ObjectClassNameToValue       = map[string]ObjectClass{
 		"CKO_DATA":              CKO_DATA,
 		"CKO_CERTIFICATE":       CKO_CERTIFICATE,
 		"CKO_PUBLIC_KEY":        CKO_PUBLIC_KEY,
@@ -1991,7 +2667,7 @@ var (
 		"CKO_OTP_KEY":           CKO_OTP_KEY,
 		"CKO_VENDOR_DEFINED":    CKO_VENDOR_DEFINED,
 	}
-	_ObjectClassValueToName = map[ObjectClass]string{
+	ObjectClassValueToName = map[ObjectClass]string{
 		CKO_DATA:              "CKO_DATA",
 		CKO_CERTIFICATE:       "CKO_CERTIFICATE",
 		CKO_PUBLIC_KEY:        "CKO_PUBLIC_KEY",
@@ -2003,7 +2679,7 @@ var (
 		CKO_OTP_KEY:           "CKO_OTP_KEY",
 		CKO_VENDOR_DEFINED:    "CKO_VENDOR_DEFINED",
 	}
-	_ReturnNameToValue = map[string]Return{
+	ReturnNameToValue = map[string]Return{
 		"CKR_OK":                               CKR_OK,
 		"CKR_CANCEL":                           CKR_CANCEL,
 		"CKR_HOST_MEMORY":                      CKR_HOST_MEMORY,
@@ -2115,6 +2791,9 @@ var (
 		"CKR_IBM_EMBED_GENERIC":                CKR_IBM_EMBED_GENERIC,
 		"CKR_IBM_TRANSPORT_LIMIT":              CKR_IBM_TRANSPORT_LIMIT,
 		"CKR_IBM_FCV_NOT_SET":                  CKR_IBM_FCV_NOT_SET,
+		"CKR_IBM_PERF_CATEGORY_INVALID":        CKR_IBM_PERF_CATEGORY_INVALID,
+		"CKR_IBM_API_MISMATCH":                 CKR_IBM_API_MISMATCH,
+		"CKR_IBM_TARGET_INVALID":               CKR_IBM_TARGET_INVALID,
 		"CKR_VENDOR_DEFINED_GREP11":            CKR_VENDOR_DEFINED_GREP11,
 		"CKR_IBM_GREP11_NOT_AUTHENTICATED":     CKR_IBM_GREP11_NOT_AUTHENTICATED,
 		"CKR_IBM_GREP11_CANNOT_UNMARSHAL":      CKR_IBM_GREP11_CANNOT_UNMARSHAL,
@@ -2123,7 +2802,7 @@ var (
 		"CKR_IBM_GREP11_DBINTERNAL":            CKR_IBM_GREP11_DBINTERNAL,
 		"CKR_IBM_GREP11_SERVER_INTERNAL":       CKR_IBM_GREP11_SERVER_INTERNAL,
 	}
-	_ReturnValueToName = map[Return]string{
+	ReturnValueToName = map[Return]string{
 		CKR_OK:                               "CKR_OK",
 		CKR_CANCEL:                           "CKR_CANCEL",
 		CKR_HOST_MEMORY:                      "CKR_HOST_MEMORY",
@@ -2235,6 +2914,9 @@ var (
 		CKR_IBM_EMBED_GENERIC:                "CKR_IBM_EMBED_GENERIC",
 		CKR_IBM_TRANSPORT_LIMIT:              "CKR_IBM_TRANSPORT_LIMIT",
 		CKR_IBM_FCV_NOT_SET:                  "CKR_IBM_FCV_NOT_SET",
+		CKR_IBM_PERF_CATEGORY_INVALID:        "CKR_IBM_PERF_CATEGORY_INVALID",
+		CKR_IBM_API_MISMATCH:                 "CKR_IBM_API_MISMATCH",
+		CKR_IBM_TARGET_INVALID:               "CKR_IBM_TARGET_INVALID",
 		CKR_VENDOR_DEFINED_GREP11:            "CKR_VENDOR_DEFINED_GREP11",
 		CKR_IBM_GREP11_NOT_AUTHENTICATED:     "CKR_IBM_GREP11_NOT_AUTHENTICATED",
 		CKR_IBM_GREP11_CANNOT_UNMARSHAL:      "CKR_IBM_GREP11_CANNOT_UNMARSHAL",
@@ -2245,11 +2927,85 @@ var (
 	}
 )
 
+// MarshalJSON is generated so AdminCommand satisfies json.Marshaler.
+func (c AdminCommand) MarshalJSON() ([]byte, error) {
+	s, ok := AdminCommandValueToName[c]
+	if !ok {
+		s = c.String()
+	}
+	return json.Marshal(s)
+}
+
+// UnmarshalJSON is generated so AdminCommand satisfies json.Unmarshaler.
+func (c *AdminCommand) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("AdminCommand should be a string, got %s", data)
+	}
+
+	return c.FromString(s)
+}
+
+// Workaround for a strange Map behaviour
+func (c AdminCommand) MarshalText() (text []byte, err error) {
+	return []byte(c.String()), nil
+}
+
+func (c *AdminCommand) UnmarshalText(text []byte) error {
+	return c.FromString(string(text))
+}
+
+// JSONPBMarshaler is implemented by protobuf messages that customize the
+// way they are marshaled to JSON. Messages that implement this should
+// also implement JSONPBUnmarshaler so that the custom format can be
+// parsed.
+func (c AdminCommand) MarshalJSONPB(*jsonpb.Marshaler) ([]byte, error) {
+	return c.MarshalJSON()
+}
+
+// JSONPBUnmarshaler is implemented by protobuf messages that customize
+// the way they are unmarshaled from JSON. Messages that implement this
+// should also implement JSONPBMarshaler so that the custom format can be
+// produced.
+func (c *AdminCommand) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
+	err := c.UnmarshalJSON(d)
+	if err == nil {
+		return nil
+	}
+
+	return c.FromString(string(d))
+}
+
+func (c AdminCommand) String() string {
+	if str, ok := AdminCommandValueToName[c]; ok {
+		return str
+	}
+	return "AdminCommand(0x" + strconv.FormatUint(uint64(c), 16) + ")"
+}
+
+func (c *AdminCommand) FromString(s string) error {
+	v, ok := AdminCommandNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "AdminCommand(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid AdminCommand %q", s)
+	}
+
+	*c = AdminCommand(vv)
+	return nil
+}
+
 // MarshalJSON is generated so Attribute satisfies json.Marshaler.
 func (c Attribute) MarshalJSON() ([]byte, error) {
-	s, ok := _AttributeValueToName[c]
+	s, ok := AttributeValueToName[c]
 	if !ok {
-		return nil, fmt.Errorf("invalid Attribute: %d", c)
+		s = c.String()
 	}
 	return json.Marshal(s)
 }
@@ -2260,12 +3016,8 @@ func (c *Attribute) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("Attribute should be a string, got %s", data)
 	}
-	v, ok := _AttributeNameToValue[s]
-	if !ok {
-		return fmt.Errorf("invalid Attribute %q", s)
-	}
-	*c = v
-	return nil
+
+	return c.FromString(s)
 }
 
 // Workaround for a strange Map behaviour
@@ -2274,12 +3026,7 @@ func (c Attribute) MarshalText() (text []byte, err error) {
 }
 
 func (c *Attribute) UnmarshalText(text []byte) error {
-	v, ok := _AttributeNameToValue[string(text)]
-	if !ok {
-		return fmt.Errorf("invalid Attribute %q", string(text))
-	}
-	*c = v
-	return nil
+	return c.FromString(string(text))
 }
 
 // JSONPBMarshaler is implemented by protobuf messages that customize the
@@ -2300,26 +3047,409 @@ func (c *Attribute) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
 		return nil
 	}
 
-	v, ok := _AttributeNameToValue[string(d)]
-	if !ok {
-		return err
-	}
-	*c = v
-	return nil
+	return c.FromString(string(d))
 }
 
 func (c Attribute) String() string {
-	if str, ok := _AttributeValueToName[c]; ok {
+	if str, ok := AttributeValueToName[c]; ok {
 		return str
 	}
 	return "Attribute(0x" + strconv.FormatUint(uint64(c), 16) + ")"
 }
 
+func (c *Attribute) FromString(s string) error {
+	v, ok := AttributeNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "Attribute(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid Attribute %q", s)
+	}
+
+	*c = Attribute(vv)
+	return nil
+}
+
+// MarshalJSON is generated so CardAttributeFlags satisfies json.Marshaler.
+func (c CardAttributeFlags) MarshalJSON() ([]byte, error) {
+	s, ok := CardAttributeFlagsValueToName[c]
+	if !ok {
+		s = c.String()
+	}
+	return json.Marshal(s)
+}
+
+// UnmarshalJSON is generated so CardAttributeFlags satisfies json.Unmarshaler.
+func (c *CardAttributeFlags) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("CardAttributeFlags should be a string, got %s", data)
+	}
+
+	return c.FromString(s)
+}
+
+// Workaround for a strange Map behaviour
+func (c CardAttributeFlags) MarshalText() (text []byte, err error) {
+	return []byte(c.String()), nil
+}
+
+func (c *CardAttributeFlags) UnmarshalText(text []byte) error {
+	return c.FromString(string(text))
+}
+
+// JSONPBMarshaler is implemented by protobuf messages that customize the
+// way they are marshaled to JSON. Messages that implement this should
+// also implement JSONPBUnmarshaler so that the custom format can be
+// parsed.
+func (c CardAttributeFlags) MarshalJSONPB(*jsonpb.Marshaler) ([]byte, error) {
+	return c.MarshalJSON()
+}
+
+// JSONPBUnmarshaler is implemented by protobuf messages that customize
+// the way they are unmarshaled from JSON. Messages that implement this
+// should also implement JSONPBMarshaler so that the custom format can be
+// produced.
+func (c *CardAttributeFlags) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
+	err := c.UnmarshalJSON(d)
+	if err == nil {
+		return nil
+	}
+
+	return c.FromString(string(d))
+}
+
+func (c CardAttributeFlags) String() string {
+	if str, ok := CardAttributeFlagsValueToName[c]; ok {
+		return str
+	}
+	return "CardAttributeFlags(0x" + strconv.FormatUint(uint64(c), 16) + ")"
+}
+
+func (c *CardAttributeFlags) FromString(s string) error {
+	v, ok := CardAttributeFlagsNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "CardAttributeFlags(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid CardAttributeFlags %q", s)
+	}
+
+	*c = CardAttributeFlags(vv)
+	return nil
+}
+
+// MarshalJSON is generated so CardAttributeKey satisfies json.Marshaler.
+func (c CardAttributeKey) MarshalJSON() ([]byte, error) {
+	s, ok := CardAttributeKeyValueToName[c]
+	if !ok {
+		s = c.String()
+	}
+	return json.Marshal(s)
+}
+
+// UnmarshalJSON is generated so CardAttributeKey satisfies json.Unmarshaler.
+func (c *CardAttributeKey) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("CardAttributeKey should be a string, got %s", data)
+	}
+
+	return c.FromString(s)
+}
+
+// Workaround for a strange Map behaviour
+func (c CardAttributeKey) MarshalText() (text []byte, err error) {
+	return []byte(c.String()), nil
+}
+
+func (c *CardAttributeKey) UnmarshalText(text []byte) error {
+	return c.FromString(string(text))
+}
+
+// JSONPBMarshaler is implemented by protobuf messages that customize the
+// way they are marshaled to JSON. Messages that implement this should
+// also implement JSONPBUnmarshaler so that the custom format can be
+// parsed.
+func (c CardAttributeKey) MarshalJSONPB(*jsonpb.Marshaler) ([]byte, error) {
+	return c.MarshalJSON()
+}
+
+// JSONPBUnmarshaler is implemented by protobuf messages that customize
+// the way they are unmarshaled from JSON. Messages that implement this
+// should also implement JSONPBMarshaler so that the custom format can be
+// produced.
+func (c *CardAttributeKey) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
+	err := c.UnmarshalJSON(d)
+	if err == nil {
+		return nil
+	}
+
+	return c.FromString(string(d))
+}
+
+func (c CardAttributeKey) String() string {
+	if str, ok := CardAttributeKeyValueToName[c]; ok {
+		return str
+	}
+	return "CardAttributeKey(0x" + strconv.FormatUint(uint64(c), 16) + ")"
+}
+
+func (c *CardAttributeKey) FromString(s string) error {
+	v, ok := CardAttributeKeyNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "CardAttributeKey(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid CardAttributeKey %q", s)
+	}
+
+	*c = CardAttributeKey(vv)
+	return nil
+}
+
+// MarshalJSON is generated so ControlPoint satisfies json.Marshaler.
+func (c ControlPoint) MarshalJSON() ([]byte, error) {
+	s, ok := ControlPointValueToName[c]
+	if !ok {
+		s = c.String()
+	}
+	return json.Marshal(s)
+}
+
+// UnmarshalJSON is generated so ControlPoint satisfies json.Unmarshaler.
+func (c *ControlPoint) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("ControlPoint should be a string, got %s", data)
+	}
+
+	return c.FromString(s)
+}
+
+// Workaround for a strange Map behaviour
+func (c ControlPoint) MarshalText() (text []byte, err error) {
+	return []byte(c.String()), nil
+}
+
+func (c *ControlPoint) UnmarshalText(text []byte) error {
+	return c.FromString(string(text))
+}
+
+// JSONPBMarshaler is implemented by protobuf messages that customize the
+// way they are marshaled to JSON. Messages that implement this should
+// also implement JSONPBUnmarshaler so that the custom format can be
+// parsed.
+func (c ControlPoint) MarshalJSONPB(*jsonpb.Marshaler) ([]byte, error) {
+	return c.MarshalJSON()
+}
+
+// JSONPBUnmarshaler is implemented by protobuf messages that customize
+// the way they are unmarshaled from JSON. Messages that implement this
+// should also implement JSONPBMarshaler so that the custom format can be
+// produced.
+func (c *ControlPoint) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
+	err := c.UnmarshalJSON(d)
+	if err == nil {
+		return nil
+	}
+
+	return c.FromString(string(d))
+}
+
+func (c ControlPoint) String() string {
+	if str, ok := ControlPointValueToName[c]; ok {
+		return str
+	}
+	return "ControlPoint(0x" + strconv.FormatUint(uint64(c), 16) + ")"
+}
+
+func (c *ControlPoint) FromString(s string) error {
+	v, ok := ControlPointNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "ControlPoint(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid ControlPoint %q", s)
+	}
+
+	*c = ControlPoint(vv)
+	return nil
+}
+
+// MarshalJSON is generated so FunctionID satisfies json.Marshaler.
+func (c FunctionID) MarshalJSON() ([]byte, error) {
+	s, ok := FunctionIDValueToName[c]
+	if !ok {
+		s = c.String()
+	}
+	return json.Marshal(s)
+}
+
+// UnmarshalJSON is generated so FunctionID satisfies json.Unmarshaler.
+func (c *FunctionID) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("FunctionID should be a string, got %s", data)
+	}
+
+	return c.FromString(s)
+}
+
+// Workaround for a strange Map behaviour
+func (c FunctionID) MarshalText() (text []byte, err error) {
+	return []byte(c.String()), nil
+}
+
+func (c *FunctionID) UnmarshalText(text []byte) error {
+	return c.FromString(string(text))
+}
+
+// JSONPBMarshaler is implemented by protobuf messages that customize the
+// way they are marshaled to JSON. Messages that implement this should
+// also implement JSONPBUnmarshaler so that the custom format can be
+// parsed.
+func (c FunctionID) MarshalJSONPB(*jsonpb.Marshaler) ([]byte, error) {
+	return c.MarshalJSON()
+}
+
+// JSONPBUnmarshaler is implemented by protobuf messages that customize
+// the way they are unmarshaled from JSON. Messages that implement this
+// should also implement JSONPBMarshaler so that the custom format can be
+// produced.
+func (c *FunctionID) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
+	err := c.UnmarshalJSON(d)
+	if err == nil {
+		return nil
+	}
+
+	return c.FromString(string(d))
+}
+
+func (c FunctionID) String() string {
+	if str, ok := FunctionIDValueToName[c]; ok {
+		return str
+	}
+	return "FunctionID(0x" + strconv.FormatUint(uint64(c), 16) + ")"
+}
+
+func (c *FunctionID) FromString(s string) error {
+	v, ok := FunctionIDNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "FunctionID(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid FunctionID %q", s)
+	}
+
+	*c = FunctionID(vv)
+	return nil
+}
+
+// MarshalJSON is generated so ImporterKeyType satisfies json.Marshaler.
+func (c ImporterKeyType) MarshalJSON() ([]byte, error) {
+	s, ok := ImporterKeyTypeValueToName[c]
+	if !ok {
+		s = c.String()
+	}
+	return json.Marshal(s)
+}
+
+// UnmarshalJSON is generated so ImporterKeyType satisfies json.Unmarshaler.
+func (c *ImporterKeyType) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("ImporterKeyType should be a string, got %s", data)
+	}
+
+	return c.FromString(s)
+}
+
+// Workaround for a strange Map behaviour
+func (c ImporterKeyType) MarshalText() (text []byte, err error) {
+	return []byte(c.String()), nil
+}
+
+func (c *ImporterKeyType) UnmarshalText(text []byte) error {
+	return c.FromString(string(text))
+}
+
+// JSONPBMarshaler is implemented by protobuf messages that customize the
+// way they are marshaled to JSON. Messages that implement this should
+// also implement JSONPBUnmarshaler so that the custom format can be
+// parsed.
+func (c ImporterKeyType) MarshalJSONPB(*jsonpb.Marshaler) ([]byte, error) {
+	return c.MarshalJSON()
+}
+
+// JSONPBUnmarshaler is implemented by protobuf messages that customize
+// the way they are unmarshaled from JSON. Messages that implement this
+// should also implement JSONPBMarshaler so that the custom format can be
+// produced.
+func (c *ImporterKeyType) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
+	err := c.UnmarshalJSON(d)
+	if err == nil {
+		return nil
+	}
+
+	return c.FromString(string(d))
+}
+
+func (c ImporterKeyType) String() string {
+	if str, ok := ImporterKeyTypeValueToName[c]; ok {
+		return str
+	}
+	return "ImporterKeyType(0x" + strconv.FormatUint(uint64(c), 16) + ")"
+}
+
+func (c *ImporterKeyType) FromString(s string) error {
+	v, ok := ImporterKeyTypeNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "ImporterKeyType(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid ImporterKeyType %q", s)
+	}
+
+	*c = ImporterKeyType(vv)
+	return nil
+}
+
 // MarshalJSON is generated so KeyType satisfies json.Marshaler.
 func (c KeyType) MarshalJSON() ([]byte, error) {
-	s, ok := _KeyTypeValueToName[c]
+	s, ok := KeyTypeValueToName[c]
 	if !ok {
-		return nil, fmt.Errorf("invalid KeyType: %d", c)
+		s = c.String()
 	}
 	return json.Marshal(s)
 }
@@ -2330,12 +3460,8 @@ func (c *KeyType) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("KeyType should be a string, got %s", data)
 	}
-	v, ok := _KeyTypeNameToValue[s]
-	if !ok {
-		return fmt.Errorf("invalid KeyType %q", s)
-	}
-	*c = v
-	return nil
+
+	return c.FromString(s)
 }
 
 // Workaround for a strange Map behaviour
@@ -2344,12 +3470,7 @@ func (c KeyType) MarshalText() (text []byte, err error) {
 }
 
 func (c *KeyType) UnmarshalText(text []byte) error {
-	v, ok := _KeyTypeNameToValue[string(text)]
-	if !ok {
-		return fmt.Errorf("invalid KeyType %q", string(text))
-	}
-	*c = v
-	return nil
+	return c.FromString(string(text))
 }
 
 // JSONPBMarshaler is implemented by protobuf messages that customize the
@@ -2370,26 +3491,39 @@ func (c *KeyType) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
 		return nil
 	}
 
-	v, ok := _KeyTypeNameToValue[string(d)]
-	if !ok {
-		return err
-	}
-	*c = v
-	return nil
+	return c.FromString(string(d))
 }
 
 func (c KeyType) String() string {
-	if str, ok := _KeyTypeValueToName[c]; ok {
+	if str, ok := KeyTypeValueToName[c]; ok {
 		return str
 	}
 	return "KeyType(0x" + strconv.FormatUint(uint64(c), 16) + ")"
 }
 
+func (c *KeyType) FromString(s string) error {
+	v, ok := KeyTypeNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "KeyType(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid KeyType %q", s)
+	}
+
+	*c = KeyType(vv)
+	return nil
+}
+
 // MarshalJSON is generated so Mechanism satisfies json.Marshaler.
 func (c Mechanism) MarshalJSON() ([]byte, error) {
-	s, ok := _MechanismValueToName[c]
+	s, ok := MechanismValueToName[c]
 	if !ok {
-		return nil, fmt.Errorf("invalid Mechanism: %d", c)
+		s = c.String()
 	}
 	return json.Marshal(s)
 }
@@ -2400,12 +3534,8 @@ func (c *Mechanism) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("Mechanism should be a string, got %s", data)
 	}
-	v, ok := _MechanismNameToValue[s]
-	if !ok {
-		return fmt.Errorf("invalid Mechanism %q", s)
-	}
-	*c = v
-	return nil
+
+	return c.FromString(s)
 }
 
 // Workaround for a strange Map behaviour
@@ -2414,12 +3544,7 @@ func (c Mechanism) MarshalText() (text []byte, err error) {
 }
 
 func (c *Mechanism) UnmarshalText(text []byte) error {
-	v, ok := _MechanismNameToValue[string(text)]
-	if !ok {
-		return fmt.Errorf("invalid Mechanism %q", string(text))
-	}
-	*c = v
-	return nil
+	return c.FromString(string(text))
 }
 
 // JSONPBMarshaler is implemented by protobuf messages that customize the
@@ -2440,26 +3565,39 @@ func (c *Mechanism) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
 		return nil
 	}
 
-	v, ok := _MechanismNameToValue[string(d)]
-	if !ok {
-		return err
-	}
-	*c = v
-	return nil
+	return c.FromString(string(d))
 }
 
 func (c Mechanism) String() string {
-	if str, ok := _MechanismValueToName[c]; ok {
+	if str, ok := MechanismValueToName[c]; ok {
 		return str
 	}
 	return "Mechanism(0x" + strconv.FormatUint(uint64(c), 16) + ")"
 }
 
+func (c *Mechanism) FromString(s string) error {
+	v, ok := MechanismNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "Mechanism(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid Mechanism %q", s)
+	}
+
+	*c = Mechanism(vv)
+	return nil
+}
+
 // MarshalJSON is generated so MechanismInfoFlag satisfies json.Marshaler.
 func (c MechanismInfoFlag) MarshalJSON() ([]byte, error) {
-	s, ok := _MechanismInfoFlagValueToName[c]
+	s, ok := MechanismInfoFlagValueToName[c]
 	if !ok {
-		return nil, fmt.Errorf("invalid MechanismInfoFlag: %d", c)
+		s = c.String()
 	}
 	return json.Marshal(s)
 }
@@ -2470,12 +3608,8 @@ func (c *MechanismInfoFlag) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("MechanismInfoFlag should be a string, got %s", data)
 	}
-	v, ok := _MechanismInfoFlagNameToValue[s]
-	if !ok {
-		return fmt.Errorf("invalid MechanismInfoFlag %q", s)
-	}
-	*c = v
-	return nil
+
+	return c.FromString(s)
 }
 
 // Workaround for a strange Map behaviour
@@ -2484,12 +3618,7 @@ func (c MechanismInfoFlag) MarshalText() (text []byte, err error) {
 }
 
 func (c *MechanismInfoFlag) UnmarshalText(text []byte) error {
-	v, ok := _MechanismInfoFlagNameToValue[string(text)]
-	if !ok {
-		return fmt.Errorf("invalid MechanismInfoFlag %q", string(text))
-	}
-	*c = v
-	return nil
+	return c.FromString(string(text))
 }
 
 // JSONPBMarshaler is implemented by protobuf messages that customize the
@@ -2510,26 +3639,39 @@ func (c *MechanismInfoFlag) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) err
 		return nil
 	}
 
-	v, ok := _MechanismInfoFlagNameToValue[string(d)]
-	if !ok {
-		return err
-	}
-	*c = v
-	return nil
+	return c.FromString(string(d))
 }
 
 func (c MechanismInfoFlag) String() string {
-	if str, ok := _MechanismInfoFlagValueToName[c]; ok {
+	if str, ok := MechanismInfoFlagValueToName[c]; ok {
 		return str
 	}
 	return "MechanismInfoFlag(0x" + strconv.FormatUint(uint64(c), 16) + ")"
 }
 
+func (c *MechanismInfoFlag) FromString(s string) error {
+	v, ok := MechanismInfoFlagNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "MechanismInfoFlag(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid MechanismInfoFlag %q", s)
+	}
+
+	*c = MechanismInfoFlag(vv)
+	return nil
+}
+
 // MarshalJSON is generated so ObjectClass satisfies json.Marshaler.
 func (c ObjectClass) MarshalJSON() ([]byte, error) {
-	s, ok := _ObjectClassValueToName[c]
+	s, ok := ObjectClassValueToName[c]
 	if !ok {
-		return nil, fmt.Errorf("invalid ObjectClass: %d", c)
+		s = c.String()
 	}
 	return json.Marshal(s)
 }
@@ -2540,12 +3682,8 @@ func (c *ObjectClass) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("ObjectClass should be a string, got %s", data)
 	}
-	v, ok := _ObjectClassNameToValue[s]
-	if !ok {
-		return fmt.Errorf("invalid ObjectClass %q", s)
-	}
-	*c = v
-	return nil
+
+	return c.FromString(s)
 }
 
 // Workaround for a strange Map behaviour
@@ -2554,12 +3692,7 @@ func (c ObjectClass) MarshalText() (text []byte, err error) {
 }
 
 func (c *ObjectClass) UnmarshalText(text []byte) error {
-	v, ok := _ObjectClassNameToValue[string(text)]
-	if !ok {
-		return fmt.Errorf("invalid ObjectClass %q", string(text))
-	}
-	*c = v
-	return nil
+	return c.FromString(string(text))
 }
 
 // JSONPBMarshaler is implemented by protobuf messages that customize the
@@ -2580,26 +3713,39 @@ func (c *ObjectClass) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
 		return nil
 	}
 
-	v, ok := _ObjectClassNameToValue[string(d)]
-	if !ok {
-		return err
-	}
-	*c = v
-	return nil
+	return c.FromString(string(d))
 }
 
 func (c ObjectClass) String() string {
-	if str, ok := _ObjectClassValueToName[c]; ok {
+	if str, ok := ObjectClassValueToName[c]; ok {
 		return str
 	}
 	return "ObjectClass(0x" + strconv.FormatUint(uint64(c), 16) + ")"
 }
 
+func (c *ObjectClass) FromString(s string) error {
+	v, ok := ObjectClassNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "ObjectClass(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid ObjectClass %q", s)
+	}
+
+	*c = ObjectClass(vv)
+	return nil
+}
+
 // MarshalJSON is generated so Return satisfies json.Marshaler.
 func (c Return) MarshalJSON() ([]byte, error) {
-	s, ok := _ReturnValueToName[c]
+	s, ok := ReturnValueToName[c]
 	if !ok {
-		return nil, fmt.Errorf("invalid Return: %d", c)
+		s = c.String()
 	}
 	return json.Marshal(s)
 }
@@ -2610,12 +3756,8 @@ func (c *Return) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("Return should be a string, got %s", data)
 	}
-	v, ok := _ReturnNameToValue[s]
-	if !ok {
-		return fmt.Errorf("invalid Return %q", s)
-	}
-	*c = v
-	return nil
+
+	return c.FromString(s)
 }
 
 // Workaround for a strange Map behaviour
@@ -2624,12 +3766,7 @@ func (c Return) MarshalText() (text []byte, err error) {
 }
 
 func (c *Return) UnmarshalText(text []byte) error {
-	v, ok := _ReturnNameToValue[string(text)]
-	if !ok {
-		return fmt.Errorf("invalid Return %q", string(text))
-	}
-	*c = v
-	return nil
+	return c.FromString(string(text))
 }
 
 // JSONPBMarshaler is implemented by protobuf messages that customize the
@@ -2650,21 +3787,35 @@ func (c *Return) UnmarshalJSONPB(m *jsonpb.Unmarshaler, d []byte) error {
 		return nil
 	}
 
-	v, ok := _ReturnNameToValue[string(d)]
-	if !ok {
-		return err
-	}
-	*c = v
-	return nil
+	return c.FromString(string(d))
 }
 
 func (c Return) String() string {
-	if str, ok := _ReturnValueToName[c]; ok {
+	if str, ok := ReturnValueToName[c]; ok {
 		return str
 	}
 	return "Return(0x" + strconv.FormatUint(uint64(c), 16) + ")"
 }
 
+func (c *Return) FromString(s string) error {
+	v, ok := ReturnNameToValue[s]
+	if ok {
+		*c = v
+		return nil
+	}
+
+	ss := strings.TrimPrefix(s, "Return(0x")
+	ss = strings.TrimSuffix(ss, ")")
+	vv, err := strconv.ParseUint(ss, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid Return %q", s)
+	}
+
+	*c = Return(vv)
+	return nil
+}
+
 func (c Return) Error() string {
 	return c.String()
 }
+
