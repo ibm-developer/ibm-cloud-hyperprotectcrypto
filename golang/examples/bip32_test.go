@@ -587,11 +587,11 @@ func Example_bip32_KeyDerivation() {
 		),
 		BaseKey: publicKey,
 	}
-	deriveKeyResponsePub, err := cryptoClient.DeriveKey(context.Background(), deriveKeyRequestPub)
+	_, err = cryptoClient.DeriveKey(context.Background(), deriveKeyRequestPub)
 	if err != nil {
 		fmt.Println("Don't supporte deriving key from pulic -> public in current soft-hsm version")
 	} else {
-		fmt.Printf("Derive key from public to public successfully %v", deriveKeyResponsePub)
+		fmt.Printf("Derive key from public to public successfully")
 	}
 
 	// Output:
@@ -603,7 +603,7 @@ func Example_bip32_KeyDerivation() {
 	// Derived Key type=CkBIP0032PRV2PUB index=0
 	// Derive key from private -> public
 	// Derive key from private -> private
-	// Don't supporte deriving key from pulic -> public in current soft-hsm version
+	// Derive key from public to public successfully
 }
 
 //cross sign and verification

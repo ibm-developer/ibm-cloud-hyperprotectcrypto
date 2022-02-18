@@ -432,17 +432,17 @@ func TestED25519InvalidKeyType(t *testing.T) {
 	signature, err := ed25519KeySignSingle(t, cryptoClient, generateKeyPairResponseECDSA.PrivKeyBytes, signData)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "SignSingle error")
-	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
+	assert.Contains(t, err.Error(), "CKR_KEY_TYPE_INCONSISTENT")
 
 	signature, err = ed25519KeySign(t, cryptoClient, generateKeyPairResponseECDSA.PrivKeyBytes, signData)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "SignInit error")
-	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
+	assert.Contains(t, err.Error(), "CKR_KEY_TYPE_INCONSISTENT")
 
 	signature, err = ed25519KeySignMulti(t, cryptoClient, generateKeyPairResponseECDSA.PrivKeyBytes, signData)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "SignInit error")
-	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
+	assert.Contains(t, err.Error(), "CKR_KEY_TYPE_INCONSISTENT")
 
 	// Verify with the wrong key type
 	generateKeyPairResponseED25519, err := ed25519KeyGenerate(t, cryptoClient)
@@ -457,12 +457,12 @@ func TestED25519InvalidKeyType(t *testing.T) {
 	err = ed25519KeyVerify(t, cryptoClient, generateKeyPairResponseECDSA.PubKeyBytes, signData, signature)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "VerifyInit error")
-	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
+	assert.Contains(t, err.Error(), "CKR_KEY_TYPE_INCONSISTENT")
 
 	err = ed25519KeyVerifyMulti(t, cryptoClient, generateKeyPairResponseECDSA.PubKeyBytes, signData, signature)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "VerifyInit error")
-	assert.Contains(t, err.Error(), "CKR_MECHANISM_INVALID")
+	assert.Contains(t, err.Error(), "CKR_KEY_TYPE_INCONSISTENT")
 }
 
 func TestED25519InvalidKeys(t *testing.T) {
