@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/ibm-developer/ibm-cloud-hyperprotectcrypto#readme",
   "dependencies": {
-    "async": "^3.1.0",
+    "async": "^3.2.2",
     "bn.js": "^5.0.0",
     "deasync": "^0.1.15",
     "elliptic": "^6.5.1",
