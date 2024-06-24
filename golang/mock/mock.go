@@ -754,3 +754,4 @@ func (mr *MockCryptoClientMockRecorder) WrapKey(arg0, arg1 interface{}, arg2 ...
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WrapKey", reflect.TypeOf((*MockCryptoClient)(nil).WrapKey), varargs...)
 }
+
